@@ -1,0 +1,17 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mini-youtube-api
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/$PROJECT_ID/mini-youtube-api:$COMMIT_SHA
+        env:
+        - name: GCS_BUCKET     value: mini-yt-videos
+        - name: DB_DSN         valueFrom: secretKeyRef: {name: db-dsn, key: dsn}
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 1
+      serviceAccountName: mini-youtube-sa

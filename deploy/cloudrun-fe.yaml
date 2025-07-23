@@ -1,0 +1,19 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mini-youtube-web
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/$PROJECT_ID/mini-youtube-web:$COMMIT_SHA
+        env:
+        - name: VITE_API_URL value: "https://mini-youtube-api-$HASH-uc.run.app"
+        - name: VITE_WS_URL  value: "wss://mini-youtube-api-$HASH-uc.run.app"
+        - name: VITE_FB_API_KEY    valueFrom: secretKeyRef: {name: fb, key: apiKey}
+        - name: VITE_FB_AUTH_DOMAIN value: "$PROJECT_ID.firebaseapp.com"
+        - name: VITE_FB_PROJECT_ID value: "$PROJECT_ID"
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 0.5
