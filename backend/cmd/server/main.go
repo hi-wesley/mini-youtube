@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 
 	"github.com/hi-wesley/mini-youtube/internal/config"
 	"github.com/hi-wesley/mini-youtube/internal/db"
@@ -17,9 +17,6 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
 	// ----- configuration & database -----
 	cfg := config.Load()
 	if err := db.Connect(cfg.DB); err != nil {
@@ -38,6 +35,13 @@ func main() {
 				p.TimeStamp.Format(time.RFC3339), p.Method, p.Path, p.StatusCode, p.Latency)
 		},
 		Output: os.Stdout,
+	}))
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}))
 
 	// public
@@ -69,3 +73,4 @@ func main() {
 		log.Fatalf("run: %v", err)
 	}
 }
+

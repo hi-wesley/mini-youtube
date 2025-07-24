@@ -1,7 +1,5 @@
 # mini-youtube
 
-WIP -- NOT A WORKING REPOSITORY
-
 ## Quick start (local)
 
 ```bash
@@ -51,3 +49,6 @@ This is a full-stack web application that aims to replicate some of the core fun
   backend, as indicated by the deploy/cloudrun-fe.yaml and deploy/cloudrun.yaml files. The ci-cd.yaml file in
   the .github/workflows directory suggests a continuous integration and deployment pipeline is set up using
   GitHub Actions.
+
+  WIP
+  ![Screenshot](https://i.imgur.com/uPDRkYE.png)

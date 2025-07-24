@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,33 +26,44 @@ func init() {
 	var err error
 	storageClient, err = storage.NewClient(context.Background())
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create storage client: %v", err)
 	}
 	cfg = config.Load()
 }
 
 func UploadVideo(c *gin.Context) {
+	log.Println("UploadVideo: starting")
 	uid := c.GetString("uid")
+	log.Printf("UploadVideo: UID: %s", uid)
+
 	file, header, err := c.Request.FormFile("video")
 	if err != nil {
+		log.Printf("UploadVideo: FormFile error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "video required"})
 		return
 	}
 	defer file.Close()
-
-	// basic client‑side validated: size, mime type, etc.
+	log.Println("UploadVideo: file retrieved from form")
 
 	object := fmt.Sprintf("videos/%s/%d-%s", uid, time.Now().Unix(), header.Filename)
+	log.Printf("UploadVideo: GCS object name: %s", object)
+
 	writer := storageClient.Bucket(cfg.GcsBucket).Object(object).NewWriter(c)
+	log.Println("UploadVideo: GCS writer created")
 
 	if _, err := io.Copy(writer, file); err != nil {
+		log.Printf("UploadVideo: io.Copy error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload failed"})
 		return
 	}
+	log.Println("UploadVideo: file copied to GCS")
+
 	if err := writer.Close(); err != nil {
+		log.Printf("UploadVideo: writer.Close error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload failed"})
 		return
 	}
+	log.Println("UploadVideo: GCS writer closed")
 
 	vid := models.Video{
 		ID:          uuid.NewString(),
@@ -61,14 +73,17 @@ func UploadVideo(c *gin.Context) {
 		ObjectName:  object,
 	}
 	if err := db.Conn.Create(&vid).Error; err != nil {
+		log.Printf("UploadVideo: db.Conn.Create error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
+	log.Println("UploadVideo: video record created in DB")
 
-	// Async summarization (fire‑and‑forget)
 	go ai.GenerateAndCacheSummary(vid.ID, "gs://"+cfg.GcsBucket+"/"+object)
+	log.Println("UploadVideo: async summary started")
 
 	c.JSON(http.StatusCreated, vid)
+	log.Println("UploadVideo: finished successfully")
 }
 
 func GetVideo(c *gin.Context) {

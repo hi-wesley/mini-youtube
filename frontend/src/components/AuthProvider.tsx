@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 initializeApp(firebaseConfig);
-const auth = getAuth();
+export const auth = getAuth();
 
 export const AuthCtx = createContext<{user:User|null} | null>(null);
 
@@ -20,4 +20,4 @@ export default function AuthProvider({children}:{children:React.ReactNode}) {
   return <AuthCtx.Provider value={{user}}>{children}</AuthCtx.Provider>;
 }
 
-// You can export helpers (login, register etc.) if needed.
+export { signInWithEmailAndPassword, createUserWithEmailAndPassword };

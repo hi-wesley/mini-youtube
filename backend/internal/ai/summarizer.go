@@ -17,7 +17,7 @@ func GenerateAndCacheSummary(videoID, gcsURI string) {
 
 	client, err := genai.NewClient(ctx, cfg.ProjectID, cfg.Region)
 	if err != nil {
-		log.Println(err)
+		log.Printf("Failed to create genai client: %v", err)
 		return
 	}
 	defer client.Close()
