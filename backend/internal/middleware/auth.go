@@ -40,6 +40,7 @@ func Auth() gin.HandlerFunc {
 		}
 
 		c.Set("uid", token.UID)
+		c.Set("email", token.Claims["email"])
 		c.Next()
 	}
 }

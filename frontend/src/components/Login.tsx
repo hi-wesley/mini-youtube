@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from './AuthProvider';
+import api from '../api/axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [isRegister, setIsRegister] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const token = await userCredential.user.getIdToken();
+        await api.post('/v1/auth/register', { username }, { headers: { Authorization: `Bearer ${token}` } });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -24,6 +28,15 @@ export default function Login() {
     <div className="max-w-xs mx-auto mt-16">
       <h2 className="text-2xl font-bold mb-4">{isRegister ? 'Register' : 'Login'}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {isRegister && (
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            className="border w-full p-2"
+          />
+        )}
         <input
           type="email"
           value={email}

@@ -30,11 +30,9 @@ func init() {
 	if err != nil { panic(err) }
 }
 
-// POST /v1/auth/register  {email, password, username}
+// POST /v1/auth/register  {username}
 func RegisterUser(c *gin.Context) {
 	var req struct {
-		Email    string `json:"email" binding:"required,email"`
-		Password string `json:"password" binding:"required,min=6"`
 		Username string `json:"username" binding:"required,min=3"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -42,22 +40,15 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// create in Firebase
-	params := (&auth.UserToCreate{}).Email(req.Email).Password(req.Password)
-	u, err := fbClient.CreateUser(c, params)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	uid := c.GetString("uid")
+	email := c.GetString("email")
 
-	// create in local DB
-	user := models.User{ID: u.UID, Email: req.Email, Username: req.Username}
+	user := models.User{ID: uid, Email: email, Username: req.Username}
 	if err := db.Conn.Create(&user).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "username or email exists"})
-		_ = fbClient.DeleteUser(c, u.UID) // roll back Firebase
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"uid": u.UID})
+	c.Status(http.StatusCreated)
 }
 
 // POST /v1/auth/login  {email, password}

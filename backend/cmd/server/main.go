@@ -46,13 +46,13 @@ func main() {
 
 	// public
 	v1 := router.Group("/v1")
-	v1.POST("/auth/register", handlers.RegisterUser)
 	v1.POST("/auth/login", handlers.LoginUser)
 
 	// auth-protected
 	auth := v1.Group("/")
 	auth.Use(middleware.Auth())
 	{
+		auth.POST("/auth/register", handlers.RegisterUser)
 		auth.GET("/profile", handlers.GetProfile)
 		auth.POST("/videos", handlers.UploadVideo)
 		auth.GET("/videos/:id", handlers.GetVideo)
