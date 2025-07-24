@@ -45,6 +45,7 @@ func UploadVideo(c *gin.Context) {
 	defer file.Close()
 	log.Println("UploadVideo: file retrieved from form")
 
+	log.Printf("UploadVideo: using GCS bucket: %s", cfg.GcsBucket)
 	object := fmt.Sprintf("videos/%s/%d-%s", uid, time.Now().Unix(), header.Filename)
 	log.Printf("UploadVideo: GCS object name: %s", object)
 
