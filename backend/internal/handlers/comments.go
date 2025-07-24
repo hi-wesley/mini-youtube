@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/<org>/mini-youtube/internal/db"
-	"github.com/<org>/mini-youtube/internal/models"
+	"github.com/hi-wesley/mini-youtube/internal/db"
+	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
 var upgrader = websocket.Upgrader{

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	firebase "firebase.google.com/go/v4"
-	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
 )
 

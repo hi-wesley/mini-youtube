@@ -1,12 +1,10 @@
 package db
 
 import (
-	"log"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/<org>/mini-youtube/internal/models"
+	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
 var Conn *gorm.DB

@@ -1,21 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 
-	"github.com/<org>/mini-youtube/internal/config"
-	"github.com/<org>/mini-youtube/internal/db"
-	"github.com/<org>/mini-youtube/internal/handlers"
-	"github.com/<org>/mini-youtube/internal/middleware"
+	"github.com/hi-wesley/mini-youtube/internal/config"
+	"github.com/hi-wesley/mini-youtube/internal/db"
+	"github.com/hi-wesley/mini-youtube/internal/handlers"
+	"github.com/hi-wesley/mini-youtube/internal/middleware"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
 	// ----- configuration & database -----
 	cfg := config.Load()
 	if err := db.Connect(cfg.DB); err != nil {
@@ -40,17 +44,17 @@ func main() {
 	v1 := router.Group("/v1")
 	v1.POST("/auth/register", handlers.RegisterUser)
 	v1.POST("/auth/login", handlers.LoginUser)
-	v1.GET("/videos/:id", handlers.GetVideo)
 
-	// auth‑protected
+	// auth-protected
 	auth := v1.Group("/")
 	auth.Use(middleware.Auth())
 	{
 		auth.GET("/profile", handlers.GetProfile)
 		auth.POST("/videos", handlers.UploadVideo)
+		auth.GET("/videos/:id", handlers.GetVideo)
 		auth.POST("/videos/:id/like", handlers.ToggleLike)
 		auth.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>
-		auth.POST("/comments", handlers.CreateComment)
+		auth.POST(" /comments", handlers.CreateComment)
 	}
 
 	// health‑check

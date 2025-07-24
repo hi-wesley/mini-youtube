@@ -4,39 +4,33 @@ import (
 	"context"
 	"log"
 
-	genai "cloud.google.com/go/vertexai/genai/v1"
-	"cloud.google.com/go/vertexai/vertexai"
-	"google.golang.org/api/option"
+	"cloud.google.com/go/vertexai/genai"
 
-	"github.com/<org>/mini-youtube/internal/db"
-	"github.com/<org>/mini-youtube/internal/models"
+	"github.com/hi-wesley/mini-youtube/internal/config"
+	"github.com/hi-wesley/mini-youtube/internal/db"
+	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
 func GenerateAndCacheSummary(videoID, gcsURI string) {
 	ctx := context.Background()
 	cfg := config.Load()
 
-	client, err := genai.NewClient(ctx,
-		option.WithEndpoint(fmt.Sprintf("%s-aiplatform.googleapis.com:443", cfg.Region)))
-	if err != nil { log.Println(err); return }
+	client, err := genai.NewClient(ctx, cfg.ProjectID, cfg.Region)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	defer client.Close()
 
-	model := client.GenerativeModel("gemini-1.5-pro") // latest model that understands video :contentReference[oaicite:1]{index=1}
+	model := client.GenerativeModel("gemini-1.5-pro") // latest model that understands video
 
-	resp, err := model.GenerateContent(ctx, &genai.GenerateContentRequest{
-		Contents: []*genai.Content{{
-			Parts: []genai.Part{
-				genai.FileDataPart("video/mp4", gcsURI),
-			},
-		}, {
-			Parts: []genai.Part{
-				genai.TextPart("Summarize this video in 3 concise sentences."),
-			},
-		}},
-	})
-	if err != nil { log.Println(err); return }
+	resp, err := model.GenerateContent(ctx, genai.FileData{MIMEType: "video/mp4", FileURI: gcsURI}, genai.Text("Summarize this video in 3 concise sentences."))
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	summary := resp.GetText()
+	summary := resp.Candidates[0].Content.Parts[0].(genai.Text)
 	db.Conn.Model(&models.Video{}).
 		Where("id = ?", videoID).
 		Update("summary", summary)

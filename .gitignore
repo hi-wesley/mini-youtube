@@ -27,6 +27,9 @@ go.work.sum
 # env file
 .env
 
+# credentials
+credentials.json
+
 # Editor/IDE
 # .idea/
 # .vscode/
