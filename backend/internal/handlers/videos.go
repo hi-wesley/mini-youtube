@@ -87,6 +87,15 @@ func UploadVideo(c *gin.Context) {
 	log.Println("UploadVideo: finished successfully")
 }
 
+func GetVideos(c *gin.Context) {
+	var videos []models.Video
+	if err := db.Conn.Find(&videos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+	c.JSON(http.StatusOK, videos)
+}
+
 func GetVideo(c *gin.Context) {
 	var video models.Video
 	if err := db.Conn.First(&video, "id = ?", c.Param("id")).Error; err != nil {

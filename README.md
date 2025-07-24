@@ -1,5 +1,7 @@
 # mini-youtube
 
+![Screenshot](https://i.imgur.com/N5vo39l.jpeg)
+
 This is a full-stack web application that aims to replicate some of the core functionalities of YouTube. It
   consists of a Go backend and a React frontend.
 
@@ -32,6 +34,3 @@ This is a full-stack web application that aims to replicate some of the core fun
   backend, as indicated by the deploy/cloudrun-fe.yaml and deploy/cloudrun.yaml files. The ci-cd.yaml file in
   the .github/workflows directory suggests a continuous integration and deployment pipeline is set up using
   GitHub Actions.
-
-  WIP
-  ![Screenshot](https://i.imgur.com/uPDRkYE.png)

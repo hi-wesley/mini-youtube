@@ -55,6 +55,7 @@ func main() {
 		auth.POST("/auth/register", handlers.RegisterUser)
 		auth.GET("/profile", handlers.GetProfile)
 		auth.POST("/videos", handlers.UploadVideo)
+		auth.GET("/videos", handlers.GetVideos)
 		auth.GET("/videos/:id", handlers.GetVideo)
 		auth.POST("/videos/:id/like", handlers.ToggleLike)
 		auth.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>

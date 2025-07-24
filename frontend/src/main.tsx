@@ -7,6 +7,7 @@ import AuthProvider from './components/AuthProvider';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import RedirectIfAuth from './components/RedirectIfAuth';
+import VideoList from './components/VideoList';
 import VideoUpload from './components/VideoUpload';
 import VideoPage from './components/VideoPage';
 
@@ -30,6 +31,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path="/"
               element={
                 <ProtectedRoute>
+                  <VideoList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upload"
+              element={
+                <ProtectedRoute>
                   <VideoUpload />
                 </ProtectedRoute>
               }
@@ -48,3 +57,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </React.StrictMode>
 );
+
