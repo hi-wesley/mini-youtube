@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,22 +17,49 @@ var upgrader = websocket.Upgrader{
 
 // GET /v1/ws/comments?vid=<videoID>   (Upgrades to WS)
 func CommentsSocket(c *gin.Context) {
+	log.Println("CommentsSocket: new connection")
 	vid := c.Query("vid")
 	if vid == "" {
+		log.Println("CommentsSocket: missing vid")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing vid"})
 		return
 	}
+
+	tokenStr := c.Query("token")
+	if tokenStr == "" {
+		log.Println("CommentsSocket: missing token")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing token"})
+		return
+	}
+
+	token, err := fbClient.VerifyIDToken(c, tokenStr)
+	if err != nil {
+		log.Printf("CommentsSocket: invalid token: %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
+	}
+
+	// Store UID in context for this connection if needed later
+	c.Set("uid", token.UID)
+
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil { return }
+	if err != nil {
+		log.Printf("CommentsSocket: upgrade error: %v", err)
+		return
+	}
+	log.Println("CommentsSocket: connection upgraded")
 
 	// Basic pub‑sub: use a channel per video in memory
 	hub := getHub(vid) // see below
 	hub.register <- conn
+	log.Println("CommentsSocket: connection registered")
 
 	// read pump: discard messages (front‑end sends via REST)
 	for {
 		if _, _, err := conn.ReadMessage(); err != nil {
+			log.Printf("CommentsSocket: read error: %v", err)
 			hub.unregister <- conn
+			log.Println("CommentsSocket: connection unregistered")
 			break
 		}
 	}

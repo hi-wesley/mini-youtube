@@ -27,19 +27,31 @@ export default function CommentArea({videoId}:{videoId:string}) {
   const [comments,setComments] = useState<Comment[]>([]);
   useEffect(()=>{ if(initial) setComments(initial); }, [initial]);
 
-  // open WS once
-  const initialized = useRef(false);
   useEffect(()=>{
-    if(initialized.current) return;
-    const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/v1/ws/comments?vid=${videoId}`);
-    socket.onmessage = e => {
-      const c:Comment = JSON.parse(e.data);
-      setComments(prev=>[c, ...prev]);
+    const openSocket = async () => {
+      console.log('CommentArea: creating WebSocket');
+      const user = auth.currentUser;
+      if (!user) return;
+      const token = await user.getIdToken();
+      const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/v1/ws/comments?vid=${videoId}&token=${token}`);
+      
+      socket.onopen = () => console.log('CommentArea: WebSocket opened');
+      socket.onclose = () => console.log('CommentArea: WebSocket closed');
+      socket.onerror = (e) => console.error('CommentArea: WebSocket error:', e);
+
+      socket.onmessage = e => {
+        const c:Comment = JSON.parse(e.data);
+        setComments(prev=>[c, ...prev]);
+      };
+      setWs(socket);
+    }
+    openSocket();
+
+    return () => {
+      console.log('CommentArea: closing WebSocket');
+      ws?.close();
     };
-    setWs(socket);
-    initialized.current = true;
-    return ()=>socket.close();
-  },[videoId]);
+  },[videoId, auth.currentUser]);
 
   const mut = useMutation({
     mutationFn:(body:{video_id:string,message:string})=>api.post('/v1/comments',body),
