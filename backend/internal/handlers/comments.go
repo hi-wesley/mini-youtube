@@ -76,6 +76,15 @@ func (h *wsHub) run() {
 	}
 }
 
+func GetComments(c *gin.Context) {
+	var comments []models.Comment
+	if err := db.Conn.Where("video_id = ?", c.Param("id")).Order("created_at desc").Find(&comments).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+	c.JSON(http.StatusOK, comments)
+}
+
 // POST /v1/comments  {video_id, message}
 func CreateComment(c *gin.Context) {
 	uid := c.GetString("uid")

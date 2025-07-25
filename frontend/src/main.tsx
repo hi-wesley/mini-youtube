@@ -1,3 +1,4 @@
+import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,6 +8,8 @@ import AuthProvider from './components/AuthProvider';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import RedirectIfAuth from './components/RedirectIfAuth';
+import Layout from './components/Layout';
+import ProfilePage from './components/ProfilePage';
 import VideoList from './components/VideoList';
 import VideoUpload from './components/VideoUpload';
 import VideoPage from './components/VideoPage';
@@ -31,7 +34,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path="/"
               element={
                 <ProtectedRoute>
-                  <VideoList />
+                  <Layout>
+                    <VideoList />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -39,7 +44,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path="/upload"
               element={
                 <ProtectedRoute>
-                  <VideoUpload />
+                  <Layout>
+                    <VideoUpload />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -47,7 +54,19 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               path="/watch/:id"
               element={
                 <ProtectedRoute>
-                  <VideoPage />
+                  <Layout>
+                    <VideoPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
                 </ProtectedRoute>
               }
             />

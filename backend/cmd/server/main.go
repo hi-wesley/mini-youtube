@@ -58,8 +58,9 @@ func main() {
 		auth.GET("/videos", handlers.GetVideos)
 		auth.GET("/videos/:id", handlers.GetVideo)
 		auth.POST("/videos/:id/like", handlers.ToggleLike)
+		auth.GET("/videos/:id/comments", handlers.GetComments)
 		auth.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>
-		auth.POST(" /comments", handlers.CreateComment)
+		auth.POST("/comments", handlers.CreateComment)
 	}
 
 	// health‑check

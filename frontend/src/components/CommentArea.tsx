@@ -4,10 +4,13 @@ import api from '../api/axios';
 import { getAuth } from 'firebase/auth';
 
 interface Comment {
-  id: number;
-  user_id: string;
-  message: string;
-  created_at: string;
+  ID: number;
+  UserID: string;
+  Message: string;
+  CreatedAt: string;
+  User: {
+    Username: string;
+  };
 }
 
 export default function CommentArea({videoId}:{videoId:string}) {
@@ -16,9 +19,9 @@ export default function CommentArea({videoId}:{videoId:string}) {
   const auth = getAuth();
 
   // initial fetch (optional)
-  const {data:initial} = useQuery<Comment[]>({
-    queryKey:['comments',videoId],
-    queryFn:()=>api.get(`/v1/videos/${videoId}/comments`).then(r=>r.data),
+  const {data:initial} = useQuery<Comment[]>({ 
+    queryKey:['comments',videoId], 
+    queryFn:()=>api.get(`/v1/videos/${videoId}/comments`).then(r=>r.data)
   });
 
   const [comments,setComments] = useState<Comment[]>([]);
@@ -51,8 +54,8 @@ export default function CommentArea({videoId}:{videoId:string}) {
       </form>
       <ul className="my-3 space-y-2">
         {comments.map(c=>(
-          <li key={c.id} className="border-b pb-1">
-            <span className="font-medium">{c.user_id.slice(0,6)}</span> {c.message}
+          <li key={c.ID} className="border-b pb-1">
+            <span className="font-medium">{c.User?.Username || 'User'}</span> {c.Message}
           </li>
         ))}
       </ul>
