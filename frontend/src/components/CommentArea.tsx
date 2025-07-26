@@ -41,7 +41,10 @@ export default function CommentArea({videoId}:{videoId:string}) {
 
       socket.onmessage = e => {
         const c:Comment = JSON.parse(e.data);
-        setComments(prev=>[c, ...prev]);
+        setComments(prev => {
+          if (prev.find(pc => pc.ID === c.ID)) return prev;
+          return [c, ...prev]
+        });
       };
       setWs(socket);
     }
