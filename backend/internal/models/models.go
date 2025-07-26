@@ -15,6 +15,7 @@ type Video struct {
 	UserID       string    `gorm:"index" json:"UserID"`
 	Title        string    `gorm:"size:120" json:"Title"`
 	Description  string    `gorm:"type:text" json:"Description"`
+	ThumbnailURL string    `gorm:"type:text" json:"ThumbnailURL"`
 	ObjectName   string    `json:"ObjectName"`
 	Summary      string    `gorm:"type:text" json:"Summary"`
 	SummaryModel string    `gorm:"size:50" json:"SummaryModel"`

@@ -85,7 +85,7 @@ export default function VideoPage() {
             <div className="text-gray-600 mt-2">{video.Views} views • {new Date(video.CreatedAt).toLocaleDateString()}</div>
             <div className="mt-4">
               <h2 className="text-base font-bold">Description</h2>
-              <p className="text-base">{video.Description}</p>
+              <p className="text-base whitespace-pre-wrap">{video.Description}</p>
             </div>
             {video.Summary && (
               <div className="mt-4">

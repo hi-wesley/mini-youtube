@@ -1,8 +1,12 @@
 # ---------- build stage ----------
 FROM golang:1.22-bookworm AS builder
 WORKDIR /src
-COPY backend/go.* ./
-RUN go mod download
+RUN apt-get update && apt-get install -y ffmpeg
+
+# Copy the Go modules files
+COPY go.mod go.sum ./
+
+# Download Go modules
 COPY backend/. .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o /app ./cmd/server
 

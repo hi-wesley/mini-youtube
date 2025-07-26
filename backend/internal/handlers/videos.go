@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -15,6 +18,7 @@ import (
 	"github.com/hi-wesley/mini-youtube/internal/config"
 	"github.com/hi-wesley/mini-youtube/internal/db"
 	"github.com/hi-wesley/mini-youtube/internal/models"
+	"github.com/modfy/fluent-ffmpeg"
 	"gorm.io/gorm"
 )
 
@@ -46,6 +50,22 @@ func UploadVideo(c *gin.Context) {
 	defer file.Close()
 	log.Println("UploadVideo: file retrieved from form")
 
+	// Create a temporary file to store the video
+	tempFile, err := os.CreateTemp("", "upload-*.mp4")
+	if err != nil {
+		log.Printf("UploadVideo: os.CreateTemp error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload failed"})
+		return
+	}
+	defer os.Remove(tempFile.Name())
+
+	// Copy the uploaded video to the temporary file
+	if _, err := io.Copy(tempFile, file); err != nil {
+		log.Printf("UploadVideo: io.Copy error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload failed"})
+		return
+	}
+
 	log.Printf("UploadVideo: using GCS bucket: %s", cfg.GcsBucket)
 	object := fmt.Sprintf("videos/%s/%d-%s", uid, time.Now().Unix(), header.Filename)
 	log.Printf("UploadVideo: GCS object name: %s", object)
@@ -53,7 +73,10 @@ func UploadVideo(c *gin.Context) {
 	writer := storageClient.Bucket(cfg.GcsBucket).Object(object).NewWriter(c)
 	log.Println("UploadVideo: GCS writer created")
 
-	if _, err := io.Copy(writer, file); err != nil {
+	// Reset the file pointer to the beginning of the file
+	tempFile.Seek(0, 0)
+
+	if _, err := io.Copy(writer, tempFile); err != nil {
 		log.Printf("UploadVideo: io.Copy error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload failed"})
 		return
@@ -67,12 +90,87 @@ func UploadVideo(c *gin.Context) {
 	}
 	log.Println("UploadVideo: GCS writer closed")
 
+	
+
+	// Get video duration
+	metadata, err := fluentffmpeg.Probe(tempFile.Name())
+	if err != nil {
+		log.Printf("UploadVideo: ffmpeg probe error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get video metadata"})
+		return
+	}
+
+	formatData, ok := metadata["format"].(map[string]interface{})
+	if !ok {
+		log.Printf("UploadVideo: format data not found in metadata")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get video duration"})
+		return
+	}
+
+	durationStr, ok := formatData["duration"].(string)
+	if !ok {
+		log.Printf("UploadVideo: duration not found or not a string in format data")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get video duration"})
+		return
+	}
+
+	duration, err := strconv.ParseFloat(durationStr, 64)
+	if err != nil {
+		log.Printf("UploadVideo: failed to parse duration: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get video duration"})
+		return
+	}
+
+	// Add strconv to imports
+	// Add "strconv" to the import list
+	// import (
+	// 	"strconv"
+	// )
+	seekTime := duration / 4
+
+	// Convert seekTime to HH:MM:SS format
+	hours := int(seekTime / 3600)
+	minutes := int((seekTime - float64(hours*3600)) / 60)
+	seconds := int(seekTime - float64(hours*3600) - float64(minutes*60))
+	seekTimeString := fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+
+	// Generate thumbnail
+	buf := bytes.NewBuffer(nil)
+	err = fluentffmpeg.NewCommand("").
+		InputPath(tempFile.Name()).
+		OutputFormat("image2").
+		OutputOptions("-vframes", "1", "-ss", seekTimeString).
+		PipeOutput(buf).Run()
+	if err != nil {
+		log.Printf("UploadVideo: ffmpeg error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "thumbnail generation failed"})
+		return
+	}
+
+	thumbnailObject := fmt.Sprintf("thumbnails/%s/%d-thumbnail.jpg", uid, time.Now().Unix())
+	thumbnailWriter := storageClient.Bucket(cfg.GcsBucket).Object(thumbnailObject).NewWriter(c)
+
+	if _, err := io.Copy(thumbnailWriter, buf); err != nil {
+		log.Printf("UploadVideo: thumbnail io.Copy error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "thumbnail upload failed"})
+		return
+	}
+
+	if err := thumbnailWriter.Close(); err != nil {
+		log.Printf("UploadVideo: thumbnail writer.Close error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "thumbnail upload failed"})
+		return
+	}
+
+	
+
 	vid := models.Video{
-		ID:          uuid.NewString(),
-		UserID:      uid,
-		Title:       c.PostForm("title"),
-		Description: c.PostForm("description"),
-		ObjectName:  object,
+		ID:           uuid.NewString(),
+		UserID:       uid,
+		Title:        c.PostForm("title"),
+		Description:  c.PostForm("description"),
+		ObjectName:   object,
+		ThumbnailURL: fmt.Sprintf("https://storage.googleapis.com/%s/%s", cfg.GcsBucket, thumbnailObject),
 	}
 	if err := db.Conn.Create(&vid).Error; err != nil {
 		log.Printf("UploadVideo: db.Conn.Create error: %v", err)

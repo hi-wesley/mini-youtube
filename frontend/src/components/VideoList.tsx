@@ -6,6 +6,7 @@ import api from '../api/axios';
 interface Video {
   ID: string;
   Title: string;
+  ThumbnailURL: string;
   // Add other video properties here as needed
 }
 
@@ -29,7 +30,7 @@ export default function VideoList() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {videos?.map(video => (
           <Link to={`/watch/${video.ID}`} key={video.ID} className="border rounded-lg overflow-hidden">
-            {/* You can add a thumbnail image here later */}
+            <img src={video.ThumbnailURL} alt={video.Title} className="w-full h-48 object-cover"/>
             <div className="p-4">
               <h3 className="font-bold">{video.Title}</h3>
             </div>
