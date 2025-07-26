@@ -11,18 +11,19 @@ type User struct {
 }
 
 type Video struct {
-	ID          string    `gorm:"primaryKey" json:"ID"`
-	UserID      string    `gorm:"index" json:"UserID"`
-	Title       string    `gorm:"size:120" json:"Title"`
-	Description string    `gorm:"type:text" json:"Description"`
-	ObjectName  string    `json:"ObjectName"`
-	Summary     string    `gorm:"type:text" json:"Summary"`
-	Views       int64     `json:"Views"`
-	CreatedAt   time.Time `json:"CreatedAt"`
-	User        User      `gorm:"foreignKey:UserID" json:"User"`
-	Comments    []Comment `json:"Comments"`
-	Likes       int       `gorm:"-" json:"Likes"`
-	IsLiked     bool      `gorm:"-" json:"IsLiked"`
+	ID           string    `gorm:"primaryKey" json:"ID"`
+	UserID       string    `gorm:"index" json:"UserID"`
+	Title        string    `gorm:"size:120" json:"Title"`
+	Description  string    `gorm:"type:text" json:"Description"`
+	ObjectName   string    `json:"ObjectName"`
+	Summary      string    `gorm:"type:text" json:"Summary"`
+	SummaryModel string    `gorm:"size:50" json:"SummaryModel"`
+	Views        int64     `json:"Views"`
+	CreatedAt    time.Time `json:"CreatedAt"`
+	User         User      `gorm:"foreignKey:UserID" json:"User"`
+	Comments     []Comment `json:"Comments"`
+	Likes        int       `gorm:"-" json:"Likes"`
+	IsLiked      bool      `gorm:"-" json:"IsLiked"`
 }
 
 type Comment struct {

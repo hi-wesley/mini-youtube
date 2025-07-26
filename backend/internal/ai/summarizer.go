@@ -22,7 +22,8 @@ func GenerateAndCacheSummary(videoID, gcsURI string) {
 	}
 	defer client.Close()
 
-	model := client.GenerativeModel("gemini-2.5-flash-lite") // latest model that understands video
+	modelName := "gemini-2.5-flash-lite" // latest model that understands video
+	model := client.GenerativeModel(modelName)
 
 	resp, err := model.GenerateContent(ctx, genai.FileData{MIMEType: "video/mp4", FileURI: gcsURI}, genai.Text("Summarize this video in 3 concise sentences."))
 	if err != nil {
@@ -33,5 +34,8 @@ func GenerateAndCacheSummary(videoID, gcsURI string) {
 	summary := resp.Candidates[0].Content.Parts[0].(genai.Text)
 	db.Conn.Model(&models.Video{}).
 		Where("id = ?", videoID).
-		Update("summary", string(summary))
+		Updates(map[string]interface{}{
+			"summary":       string(summary),
+			"summary_model": modelName,
+		})
 }
