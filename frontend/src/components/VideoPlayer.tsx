@@ -5,13 +5,26 @@ export default function VideoPlayer({ src, autoPlay }: { src: string, autoPlay?:
 
   useEffect(() => {
     if (autoPlay && videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.error("Autoplay was prevented: ", error);
-      });
+      const playVideo = async () => {
+        try {
+          // Try to play with sound first
+          await videoRef.current.play();
+        } catch (error) {
+          // If it fails, it's likely due to autoplay restrictions.
+          // Mute the video and try playing again.
+          console.log("Autoplay with sound failed, falling back to muted autoplay.", error);
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+            videoRef.current.play();
+          }
+        }
+      };
+      playVideo();
     }
   }, [src, autoPlay]);
 
   return (
+    // The `muted` attribute is removed from here to allow the initial attempt to play with sound.
     <video ref={videoRef} controls src={src} className="w-full rounded-lg" playsInline>
       Your browser does not support the video tag.
     </video>
