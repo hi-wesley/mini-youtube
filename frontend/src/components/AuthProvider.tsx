@@ -12,12 +12,19 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 export const auth = getAuth();
 
-export const AuthCtx = createContext<{user:User|null} | null>(null);
+export const AuthCtx = createContext<{user:User|null, loading:boolean} | null>(null);
 
 export default function AuthProvider({children}:{children:React.ReactNode}) {
   const [user, setUser] = useState<User|null>(null);
-  useEffect(()=>onAuthStateChanged(auth, setUser), []);
-  return <AuthCtx.Provider value={{user}}>{children}</AuthCtx.Provider>;
+  const [loading, setLoading] = useState(true);
+  useEffect(()=>{
+    const unsub = onAuthStateChanged(auth, u=>{
+      setUser(u);
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+  return <AuthCtx.Provider value={{user, loading}}>{children}</AuthCtx.Provider>;
 }
 
 export { signInWithEmailAndPassword, createUserWithEmailAndPassword };

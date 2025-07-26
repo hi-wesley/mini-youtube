@@ -1,34 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 
-	firebase "firebase.google.com/go/v4"
-	"firebase.google.com/go/v4/auth"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/api/option"
 
 	"github.com/hi-wesley/mini-youtube/internal/db"
 	"github.com/hi-wesley/mini-youtube/internal/models"
 )
-
-var (
-	fbApp    *firebase.App
-	fbClient *auth.Client
-)
-
-func init() {
-	var err error
-	fbApp, err = firebase.NewApp(context.Background(), nil, option.WithCredentialsFile(
-		// GOOGLE_APPLICATION_CREDENTIALS env var already points to the JSON
-		"",
-	))
-	if err != nil { panic(err) }
-
-	fbClient, err = fbApp.Auth(context.Background())
-	if err != nil { panic(err) }
-}
 
 // POST /v1/auth/register  {username}
 func RegisterUser(c *gin.Context) {

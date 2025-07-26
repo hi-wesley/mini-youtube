@@ -68,15 +68,17 @@ export default function CommentArea({videoId}:{videoId:string}) {
   return (
     <div className="p-4 bg-gray-100 rounded-lg">
       <h2 className="text-lg font-bold mb-4">Comments</h2>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <textarea
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          className="w-full p-2 border rounded-lg"
-          placeholder="Add a comment..."
-        />
-        <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Comment</button>
-      </form>
+      {auth.currentUser && (
+        <form onSubmit={handleSubmit} className="mb-4">
+          <textarea
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+            className="w-full p-2 border rounded-lg"
+            placeholder="Add a comment..."
+          />
+          <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Comment</button>
+        </form>
+      )}
       <div>
         {comments.map(comment => (
           <div key={comment.ID} style={{ marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>

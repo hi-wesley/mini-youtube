@@ -47,6 +47,11 @@ func main() {
 	// public
 	v1 := router.Group("/v1")
 	v1.POST("/auth/login", handlers.LoginUser)
+	v1.GET("/videos", handlers.GetVideos)
+	v1.GET("/videos/:id", middleware.MaybeAuth(), handlers.GetVideo)
+	v1.POST("/videos/:id/view", handlers.IncrementView)
+	v1.GET("/videos/:id/comments", handlers.GetComments)
+	v1.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>
 
 	// auth-protected
 	auth := v1.Group("/")
@@ -55,15 +60,9 @@ func main() {
 		auth.POST("/auth/register", handlers.RegisterUser)
 		auth.GET("/profile", handlers.GetProfile)
 		auth.POST("/videos", handlers.UploadVideo)
-		auth.GET("/videos", handlers.GetVideos)
-		auth.GET("/videos/:id", handlers.GetVideo)
 		auth.POST("/videos/:id/like", handlers.ToggleLike)
-		auth.POST("/videos/:id/view", handlers.IncrementView)
-		auth.GET("/videos/:id/comments", handlers.GetComments)
 		auth.POST("/comments", handlers.CreateComment)
 	}
-
-	v1.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>
 
 	// health‑check
 	router.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })

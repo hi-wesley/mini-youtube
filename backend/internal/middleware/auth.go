@@ -1,27 +1,15 @@
 package middleware
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"strings"
 
-	firebase "firebase.google.com/go/v4"
 	"github.com/gin-gonic/gin"
+	"github.com/hi-wesley/mini-youtube/internal/firebase"
 )
 
 func Auth() gin.HandlerFunc {
-	log.Println("Initializing Firebase...")
-	app, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		log.Fatalf("Failed to initialize Firebase app: %v", err)
-	}
-	client, err := app.Auth(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to initialize Firebase auth client: %v", err)
-	}
-	log.Println("Firebase initialized successfully")
-
 	return func(c *gin.Context) {
 		h := c.GetHeader("Authorization")
 		log.Printf("Authorization header: %s", h)
@@ -32,7 +20,7 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		token, err := client.VerifyIDToken(c, idToken)
+		token, err := firebase.Client.VerifyIDToken(c, idToken)
 		if err != nil {
 			log.Printf("VerifyIDToken error: %v", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid auth token"})
@@ -41,6 +29,25 @@ func Auth() gin.HandlerFunc {
 
 		c.Set("uid", token.UID)
 		c.Set("email", token.Claims["email"])
+		c.Next()
+	}
+}
+
+// MaybeAuth is a middleware that will try to authenticate the user if a token is provided,
+// but will not fail if the token is missing or invalid.
+func MaybeAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		h := c.GetHeader("Authorization")
+		idToken := strings.TrimPrefix(h, "Bearer ")
+
+		if idToken != "" {
+			token, err := firebase.Client.VerifyIDToken(c, idToken)
+			if err == nil && token != nil {
+				c.Set("uid", token.UID)
+				c.Set("email", token.Claims["email"])
+			}
+		}
+
 		c.Next()
 	}
 }

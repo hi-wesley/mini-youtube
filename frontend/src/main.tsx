@@ -32,13 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             />
             <Route
               path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <VideoList />
-                  </Layout>
-                </ProtectedRoute>
-              }
+              element={<Layout><VideoList /></Layout>}
             />
             <Route
               path="/upload"
@@ -52,13 +46,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             />
             <Route
               path="/watch/:id"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <VideoPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
+              element={<Layout><VideoPage /></Layout>}
             />
             <Route
               path="/profile"

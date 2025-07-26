@@ -1,10 +1,11 @@
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
-import { useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 
 import VideoPlayer from './VideoPlayer';
 import CommentArea from './CommentArea';
+import { AuthCtx } from './AuthProvider';
 
 interface Video {
   ID: string;
@@ -24,11 +25,13 @@ interface Video {
 export default function VideoPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const viewIncremented = useRef(false);
+  const auth = useContext(AuthCtx);
 
   const { data: video, isLoading, error } = useQuery<Video>({
     queryKey: ['video', id],
     queryFn: () => api.get(`/v1/videos/${id}`).then(res => res.data),
-    enabled: !!id,
+    enabled: !!id && !auth?.loading, // <-- Wait for auth to be loaded
   });
 
   const likeMutation = useMutation({
@@ -39,17 +42,19 @@ export default function VideoPage() {
   });
 
   useEffect(() => {
-    if (id) {
+    if (id && !viewIncremented.current) {
       const incrementView = async () => {
         try {
           await api.post(`/v1/videos/${id}/view`);
+          queryClient.invalidateQueries({ queryKey: ['video', id] });
         } catch (err) {
           console.error("Failed to increment view count", err);
         }
       };
       incrementView();
+      viewIncremented.current = true;
     }
-  }, [id]);
+  }, [id, queryClient]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {error.message}</div>;
@@ -69,10 +74,14 @@ export default function VideoPage() {
             <h1 className="text-2xl font-bold">{video.Title}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
               <div className="text-gray-600">Uploaded by: {video.User.Username}</div>
-              <button onClick={() => likeMutation.mutate()} className={`px-4 py-2 rounded-lg ${video.IsLiked ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                Like
-              </button>
-              <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
+              {auth?.user && (
+                <>
+                  <button onClick={() => likeMutation.mutate()} className={`px-4 py-2 rounded-lg ${video.IsLiked ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                    Like
+                  </button>
+                  <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
+                </>
+              )}
             </div>
             <div className="text-gray-600 mt-2">{video.Views} views • {new Date(video.CreatedAt).toLocaleDateString()}</div>
             <div className="mt-4">

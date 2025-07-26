@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/hi-wesley/mini-youtube/internal/db"
+	"github.com/hi-wesley/mini-youtube/internal/firebase"
 	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
@@ -32,7 +33,7 @@ func CommentsSocket(c *gin.Context) {
 		return
 	}
 
-	token, err := fbClient.VerifyIDToken(c, tokenStr)
+	token, err := firebase.Client.VerifyIDToken(c, tokenStr)
 	if err != nil {
 		log.Printf("CommentsSocket: invalid token: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
