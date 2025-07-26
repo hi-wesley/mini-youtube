@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { getAuth } from 'firebase/auth';
 
@@ -17,8 +17,8 @@ export default function CommentArea({videoId}:{videoId:string}) {
   const [ws, setWs] = useState<WebSocket|null>(null);
   const [msg, setMsg] = useState('');
   const auth = getAuth();
+  const queryClient = useQueryClient();
 
-  // initial fetch (optional)
   const {data:initial} = useQuery<Comment[]>({ 
     queryKey:['comments',videoId], 
     queryFn:()=>api.get(`/v1/videos/${videoId}/comments`).then(r=>r.data)
@@ -29,16 +29,11 @@ export default function CommentArea({videoId}:{videoId:string}) {
 
   useEffect(()=>{
     const openSocket = async () => {
-      console.log('CommentArea: creating WebSocket');
       const user = auth.currentUser;
       if (!user) return;
       const token = await user.getIdToken();
       const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/v1/ws/comments?vid=${videoId}&token=${token}`);
       
-      socket.onopen = () => console.log('CommentArea: WebSocket opened');
-      socket.onclose = () => console.log('CommentArea: WebSocket closed');
-      socket.onerror = (e) => console.error('CommentArea: WebSocket error:', e);
-
       socket.onmessage = e => {
         const c:Comment = JSON.parse(e.data);
         setComments(prev => {
@@ -51,29 +46,48 @@ export default function CommentArea({videoId}:{videoId:string}) {
     openSocket();
 
     return () => {
-      console.log('CommentArea: closing WebSocket');
       ws?.close();
     };
   },[videoId, auth.currentUser]);
 
-  const mut = useMutation({
-    mutationFn:(body:{video_id:string,message:string})=>api.post('/v1/comments',body),
-    onSuccess:()=>setMsg('')
+  const mutation = useMutation({
+    mutationFn: (newComment: { video_id: string; message: string }) => {
+      return api.post('/v1/comments', newComment);
+    },
+    onSuccess: () => {
+      setMsg('');
+      queryClient.invalidateQueries({ queryKey: ['comments', videoId] });
+    },
   });
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate({ video_id: videoId, message: msg });
+  };
+
   return (
-    <div>
-      <h4 className="font-semibold mb-2">Comments</h4>
-      <form onSubmit={e=>{e.preventDefault(); mut.mutate({video_id:videoId,message:msg});}}>
-        <input value={msg} onChange={e=>setMsg(e.target.value)} className="border px-2 py-1 w-full" placeholder="Add a comment..." />
+    <div className="p-4 bg-gray-100 rounded-lg">
+      <h2 className="text-lg font-bold mb-4">Comments</h2>
+      <form onSubmit={handleSubmit} className="mb-4">
+        <textarea
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+          placeholder="Add a comment..."
+        />
+        <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Comment</button>
       </form>
-      <ul className="my-3 space-y-2">
-        {comments.map(c=>(
-          <li key={c.ID} className="border-b pb-1">
-            <span className="font-medium">{c.User?.Username || 'User'}</span> {c.Message}
-          </li>
+      <div>
+        {comments.map(comment => (
+          <div key={comment.ID} style={{ marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <p style={{ fontWeight: 'normal' }}>{comment.User?.Username || 'User'}</p>
+              <p style={{ color: '#6b7280', fontSize: '0.875rem', marginLeft: '1rem' }}>{new Date(comment.CreatedAt).toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit'})}</p>
+            </div>
+            <p style={{ marginTop: '0' }}>{comment.Message}</p>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

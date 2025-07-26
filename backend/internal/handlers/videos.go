@@ -15,6 +15,7 @@ import (
 	"github.com/hi-wesley/mini-youtube/internal/config"
 	"github.com/hi-wesley/mini-youtube/internal/db"
 	"github.com/hi-wesley/mini-youtube/internal/models"
+	"gorm.io/gorm"
 )
 
 var (
@@ -98,11 +99,36 @@ func GetVideos(c *gin.Context) {
 
 func GetVideo(c *gin.Context) {
 	var video models.Video
+	if err := db.Conn.Preload("User").First(&video, "id = ?", c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "video not found"})
+		return
+	}
+
+	// Get like count
+	var likeCount int64
+	db.Conn.Model(&models.Like{}).Where("video_id = ?", video.ID).Count(&likeCount)
+	video.Likes = int(likeCount)
+
+	// Check if user has liked the video
+	uid, ok := c.Get("uid")
+	if ok {
+		var like models.Like
+		if err := db.Conn.First(&like, "user_id = ? AND video_id = ?", uid, video.ID).Error; err == nil {
+			video.IsLiked = true
+		}
+	}
+
+	c.JSON(http.StatusOK, video)
+}
+
+func IncrementView(c *gin.Context) {
+	var video models.Video
 	if err := db.Conn.First(&video, "id = ?", c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "video not found"})
 		return
 	}
-	c.JSON(http.StatusOK, video)
+	db.Conn.Model(&video).Update("views", gorm.Expr("views + 1"))
+	c.Status(http.StatusOK)
 }
 
 func ToggleLike(c *gin.Context) {

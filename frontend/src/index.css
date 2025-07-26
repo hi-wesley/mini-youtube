@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.comment-container {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb; /* light gray border */
+  margin-bottom: 1rem;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+}
+
+.comment-username {
+  /* font-weight: normal; */ /* Username is not bold */
+}
+
+.comment-timestamp {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-left: 1rem;
+}
+
+.comment-message {
+  margin-top: 0;
+}

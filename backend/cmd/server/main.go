@@ -58,6 +58,7 @@ func main() {
 		auth.GET("/videos", handlers.GetVideos)
 		auth.GET("/videos/:id", handlers.GetVideo)
 		auth.POST("/videos/:id/like", handlers.ToggleLike)
+		auth.POST("/videos/:id/view", handlers.IncrementView)
 		auth.GET("/videos/:id/comments", handlers.GetComments)
 		auth.POST("/comments", handlers.CreateComment)
 	}

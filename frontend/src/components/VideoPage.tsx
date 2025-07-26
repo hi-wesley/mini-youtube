@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
+import { useEffect, useRef } from 'react';
 
 import VideoPlayer from './VideoPlayer';
 import CommentArea from './CommentArea';
@@ -8,34 +9,85 @@ import CommentArea from './CommentArea';
 interface Video {
   ID: string;
   Title: string;
+  Description: string;
   ObjectName: string;
+  User: {
+    Username: string;
+  };
+  CreatedAt: string;
+  Views: number;
+  Summary: string;
+  Likes: number;
+  IsLiked: boolean;
 }
 
 export default function VideoPage() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
+  const viewIncremented = useRef(false);
+
   const { data: video, isLoading, error } = useQuery<Video>({ 
     queryKey: ['video', id], 
     queryFn: () => api.get(`/v1/videos/${id}`).then(res => res.data),
     enabled: !!id,
   });
 
+  const likeMutation = useMutation({
+    mutationFn: () => api.post(`/v1/videos/${id}/like`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['video', id] });
+    },
+  });
+
+  useEffect(() => {
+    if (id && !viewIncremented.current) {
+      const incrementView = async () => {
+        try {
+          await api.post(`/v1/videos/${id}/view`);
+          viewIncremented.current = true;
+        } catch (error) {
+          console.error("Failed to increment view count", error);
+        }
+      };
+      incrementView();
+    }
+  }, [id]);
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {error.message}</div>;
   if (!video) return <div>Video not found</div>;
 
   const videoSrc = `${import.meta.env.VITE_GCS_URL}/${video.ObjectName}`;
-  console.log("Video source URL:", videoSrc);
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-end mb-4">
         <Link to="/" className="text-blue-600">Go to Main Page</Link>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <div style={{ flex: 3 }}>
-          <VideoPlayer src={videoSrc} />
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2">
+          <VideoPlayer src={videoSrc} autoPlay />
+          <div className="mt-4">
+            <h1 className="text-2xl font-bold">{video.Title}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
+              <div className="text-gray-600">Uploaded by: {video.User.Username}</div>
+              <button onClick={() => likeMutation.mutate()} className={`px-4 py-2 rounded-lg ${video.IsLiked ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                Like
+              </button>
+              <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
+            </div>
+            <div className="text-gray-600 mt-2">{video.Views} views • {new Date(video.CreatedAt).toLocaleDateString()}</div>
+            <div className="mt-4">
+              <h2 className="font-bold">Description</h2>
+              <p>{video.Description}</p>
+            </div>
+            <div className="mt-4">
+              <h2 className="font-bold">Summary</h2>
+              <p>{video.Summary || 'No summary available.'}</p>
+            </div>
+          </div>
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="col-span-1">
           <CommentArea videoId={video.ID} />
         </div>
       </div>
