@@ -46,11 +46,22 @@ func main() {
 	defer storageClient.Close()
 
 	bucket := storageClient.Bucket(cfg.GcsBucket)
-	object := bucket.Object(video.ObjectName)
-	if err := object.Delete(ctx); err != nil {
-		log.Printf("Warning: Failed to delete GCS object '%s'. You may need to delete it manually. Error: %v", video.ObjectName, err)
+	// Delete main video object
+	videoObject := bucket.Object(video.ObjectName)
+	if err := videoObject.Delete(ctx); err != nil {
+		log.Printf("Warning: Failed to delete GCS video object '%s'. You may need to delete it manually. Error: %v", video.ObjectName, err)
 	} else {
-		log.Printf("Successfully deleted GCS object: %s", video.ObjectName)
+		log.Printf("Successfully deleted GCS video object: %s", video.ObjectName)
+	}
+
+	// Delete thumbnail object
+	// Extract object name from ThumbnailURL (e.g., "https://storage.googleapis.com/bucket/object_name")
+	thumbnailObjectName := video.ThumbnailURL[len(fmt.Sprintf("https://storage.googleapis.com/%s/", cfg.GcsBucket)):]
+	thumbnailObject := bucket.Object(thumbnailObjectName)
+	if err := thumbnailObject.Delete(ctx); err != nil {
+		log.Printf("Warning: Failed to delete GCS thumbnail object '%s'. You may need to delete it manually. Error: %v", thumbnailObjectName, err)
+	} else {
+		log.Printf("Successfully deleted GCS thumbnail object: %s", thumbnailObjectName)
 	}
 
 	// 5. Delete records from the database in a transaction
