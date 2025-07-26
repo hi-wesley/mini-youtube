@@ -106,7 +106,7 @@ func (h *wsHub) run() {
 
 func GetComments(c *gin.Context) {
 	var comments []models.Comment
-	if err := db.Conn.Where("video_id = ?", c.Param("id")).Order("created_at desc").Find(&comments).Error; err != nil {
+	if err := db.Conn.Preload("User").Where("video_id = ?", c.Param("id")).Order("created_at desc").Find(&comments).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
@@ -127,6 +127,10 @@ func CreateComment(c *gin.Context) {
 	if err := db.Conn.Create(&comment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db"}); return
 	}
+
+	// Eager load user before broadcasting
+	db.Conn.Preload("User").First(&comment, comment.ID)
+
 	getHub(req.VideoID).broadcast <- comment
 	c.JSON(http.StatusCreated, comment)
 }
