@@ -33,5 +33,5 @@ func GenerateAndCacheSummary(videoID, gcsURI string) {
 	summary := resp.Candidates[0].Content.Parts[0].(genai.Text)
 	db.Conn.Model(&models.Video{}).
 		Where("id = ?", videoID).
-		Update("summary", summary)
+		Update("summary", string(summary))
 }

@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import VideoPlayer from './VideoPlayer';
 import CommentArea from './CommentArea';
@@ -24,10 +24,9 @@ interface Video {
 export default function VideoPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const viewIncremented = useRef(false);
 
-  const { data: video, isLoading, error } = useQuery<Video>({ 
-    queryKey: ['video', id], 
+  const { data: video, isLoading, error } = useQuery<Video>({
+    queryKey: ['video', id],
     queryFn: () => api.get(`/v1/videos/${id}`).then(res => res.data),
     enabled: !!id,
   });
@@ -40,13 +39,12 @@ export default function VideoPage() {
   });
 
   useEffect(() => {
-    if (id && !viewIncremented.current) {
+    if (id) {
       const incrementView = async () => {
         try {
           await api.post(`/v1/videos/${id}/view`);
-          viewIncremented.current = true;
-        } catch (error) {
-          console.error("Failed to increment view count", error);
+        } catch (err) {
+          console.error("Failed to increment view count", err);
         }
       };
       incrementView();
