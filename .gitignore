@@ -36,7 +36,8 @@ credentials.json
 
 
 
-# sample tsx for main page
+# sample files
 ytmain.tsx
-# sample tsx for video page
 ytvideo.tsx
+ytmain.html
+ytvideo.html
