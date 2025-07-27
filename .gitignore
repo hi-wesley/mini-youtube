@@ -34,5 +34,9 @@ credentials.json
 # .idea/
 # .vscode/
 
-# sample html from youtube
-videopage.html
+
+
+# sample tsx for main page
+ytmain.tsx
+# sample tsx for video page
+ytvideo.tsx
