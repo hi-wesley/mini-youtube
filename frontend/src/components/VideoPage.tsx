@@ -66,8 +66,8 @@ export default function VideoPage() {
   return (
     <div className="container mx-auto p-4 max-w-4xl w-full">
       
-      <div className="grid grid-cols-3 gap-8">
-        <div className="col-span-2">
+      <div className="flex flex-col gap-8">
+        <div>
           <VideoPlayer src={videoSrc} autoPlay />
           <div className="mt-4">
             <h1 className="text-2xl font-bold">{video.Title}</h1>
@@ -95,7 +95,7 @@ export default function VideoPage() {
             )}
           </div>
         </div>
-        <div className="col-span-1">
+        <div>
           <CommentArea videoId={video.ID} />
         </div>
       </div>
