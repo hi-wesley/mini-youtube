@@ -11,7 +11,11 @@ export default function Header() {
         <Link to="/" className="text-xl font-bold">Mini YouTube</Link>
         <div>
           {auth?.user ? (
-            <Link to="/profile" className="text-blue-600">Profile</Link>
+            <>
+              <Link to="/upload" className="text-blue-600">Upload Video</Link>
+              <span>{'   '}</span>
+              <Link to="/profile" className="text-blue-600">Profile</Link>
+            </>
           ) : (
             <Link to="/login" className="text-blue-600">Login</Link>
           )}
