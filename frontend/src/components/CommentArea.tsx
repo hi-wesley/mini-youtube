@@ -76,7 +76,7 @@ export default function CommentArea({videoId}:{videoId:string}) {
             className="w-full p-2 border rounded-lg"
             placeholder="Add a comment..."
           />
-          <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Comment</button>
+          <button type="submit" className={`mt-2 px-4 py-2 rounded-lg transition-colors ${msg.trim() ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}>Comment</button>
         </form>
       )}
       <div>
