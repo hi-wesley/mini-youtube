@@ -107,7 +107,7 @@ func (h *wsHub) run() {
 
 func GetComments(c *gin.Context) {
 	var comments []models.Comment
-	if err := db.Conn.Preload("User").Where("video_id = ?", c.Param("id")).Order("created_at desc").Find(&comments).Error; err != nil {
+	if err := db.Conn.Preload("User").Where("video_id = ?", c.Param("id")).Order("created_at asc").Find(&comments).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}

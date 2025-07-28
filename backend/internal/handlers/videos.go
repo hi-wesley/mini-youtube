@@ -188,7 +188,7 @@ func UploadVideo(c *gin.Context) {
 
 func GetVideos(c *gin.Context) {
 	var videos []models.Video
-	if err := db.Conn.Find(&videos).Error; err != nil {
+	if err := db.Conn.Order("created_at ASC").Find(&videos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
