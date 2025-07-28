@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import { getAuth } from 'firebase/auth';
 
@@ -17,6 +18,8 @@ export default function CommentArea({videoId}:{videoId:string}) {
   const [ws, setWs] = useState<WebSocket|null>(null);
   const [msg, setMsg] = useState('');
   const auth = getAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const {data:initial} = useQuery<Comment[]>({ 
@@ -62,23 +65,25 @@ export default function CommentArea({videoId}:{videoId:string}) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth.currentUser) {
+      alert('Sign in to add a comment...');
+      return;
+    }
     mutation.mutate({ video_id: videoId, message: msg });
   };
 
   return (
     <div className="p-4 bg-gray-100 rounded-lg">
-      <h2 className="text-lg font-bold mb-4">Comments</h2>
-      {auth.currentUser && (
-        <form onSubmit={handleSubmit} className="mb-4">
-          <textarea
-            value={msg}
-            onChange={(e) => setMsg(e.target.value)}
-            className="w-full p-2 border rounded-lg"
-            placeholder="Add a comment..."
-          />
-          <button type="submit" className={`mt-2 px-4 py-2 rounded-lg transition-colors ${msg.trim() ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}>Comment</button>
-        </form>
-      )}
+      <h2 className="text-lg font-bold mb-4">{comments.length} Comments</h2>
+      <form onSubmit={handleSubmit} className="mb-4">
+        <textarea
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+          placeholder={auth.currentUser ? "Add a comment..." : "Sign in to add a comment..."}
+        />
+        <button type="submit" className={`mt-2 px-4 py-2 rounded-lg transition-colors ${msg.trim() ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}>Comment</button>
+      </form>
       <div>
         {comments.map(comment => (
           <div key={comment.ID} style={{ marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>

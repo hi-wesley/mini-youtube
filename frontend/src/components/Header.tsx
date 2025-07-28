@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthCtx, auth } from './AuthProvider';
 
 const YouTubeIcon = () => (
@@ -29,6 +29,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,9 +42,14 @@ export default function Header() {
   }, []);
 
   const handleSignOut = () => {
-    auth.signOut().then(() => {
-      navigate('/login');
-    });
+    auth.signOut();
+  };
+
+  const handleCreateClick = (e: React.MouseEvent) => {
+    if (!authContext?.user) {
+      e.preventDefault();
+      alert('Sign in to upload videos');
+    }
   };
 
   return (
@@ -54,27 +60,25 @@ export default function Header() {
           Mini YouTube
         </Link>
         <div className="flex items-center gap-4">
+          <HoverBorderGradient>
+            <Link to="/upload" onClick={handleCreateClick} className="text-blue-600 no-underline">
+              + Create
+            </Link>
+          </HoverBorderGradient>
           {authContext?.user ? (
-            <>
+            <div className="relative" ref={dropdownRef}>
               <HoverBorderGradient>
-                <Link to="/upload" className="text-blue-600 no-underline">
-                  + Create
-                </Link>
+                <button onClick={() => setDropdownOpen(!dropdownOpen)} className="text-blue-600 no-underline focus:outline-none bg-transparent border-none">
+                  Profile
+                </button>
               </HoverBorderGradient>
-              <div className="relative" ref={dropdownRef}>
-                <HoverBorderGradient>
-                  <button onClick={() => setDropdownOpen(!dropdownOpen)} className="text-blue-600 no-underline focus:outline-none bg-transparent border-none">
-                    Profile
-                  </button>
-                </HoverBorderGradient>
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
-                    <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
-                  </div>
-                )}
-              </div>
-            </>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
+                  <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                </div>
+              )}
+            </div>
           ) : (
             <HoverBorderGradient>
               <Link to="/login" className="text-blue-600 no-underline">

@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useContext, useEffect, useRef } from 'react';
@@ -25,6 +25,8 @@ interface Video {
 
 export default function VideoPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const viewIncremented = useRef(false);
   const auth = useContext(AuthCtx);
@@ -41,6 +43,14 @@ export default function VideoPage() {
       queryClient.invalidateQueries({ queryKey: ['video', id] });
     },
   });
+
+  const handleLike = () => {
+    if (!auth?.user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    likeMutation.mutate();
+  };
 
   useEffect(() => {
     if (id && !viewIncremented.current) {
@@ -73,13 +83,11 @@ export default function VideoPage() {
             <h1 className="text-2xl font-bold">{video.Title}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
               <div className="text-gray-600">Uploaded by {video.User.Username}</div>
+              <button onClick={handleLike} className={`px-4 py-2 rounded-lg ${video.IsLiked && auth?.user ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                Like ({video.Likes})
+              </button>
               {auth?.user && (
-                <>
-                  <button onClick={() => likeMutation.mutate()} className={`px-4 py-2 rounded-lg ${video.IsLiked ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                    Like
-                  </button>
-                  <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
-                </>
+                <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
               )}
             </div>
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">

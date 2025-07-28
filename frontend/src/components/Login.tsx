@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from './AuthProvider';
 import api from '../api/axios';
 import Header from './Header';
@@ -9,6 +10,11 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the page user came from, default to home page
+  const from = (location.state as any)?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +37,8 @@ export default function Login() {
         const token = await userCredential.user.getIdToken();
         try {
           await api.post('/v1/auth/register', { username }, { headers: { Authorization: `Bearer ${token}` } });
+          // Registration successful, redirect to original page
+          navigate(from, { replace: true });
         } catch (error: any) {
           // This catch block handles errors from your backend API (e.g., username taken)
           if (error.response?.data?.error) {
@@ -44,6 +52,8 @@ export default function Login() {
         }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
+        // Login successful, redirect to original page
+        navigate(from, { replace: true });
       }
     } catch (error: any) {
       // This catch block handles errors from Firebase (e.g., email already in use, weak password)
