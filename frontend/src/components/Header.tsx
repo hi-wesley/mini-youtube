@@ -1,6 +1,8 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { AuthCtx, auth } from './AuthProvider';
+import api from '../api/axios';
 
 const YouTubeIcon = () => (
   <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -24,12 +26,24 @@ const HoverBorderGradient = ({ children, className = "" }: { children: React.Rea
   </div>
 );
 
+interface User {
+  ID: string;
+  Email: string;
+  Username: string;
+}
+
 export default function Header() {
   const authContext = useContext(AuthCtx);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { data: user } = useQuery<User>({ 
+    queryKey: ['profile'], 
+    queryFn: () => api.get('/v1/profile').then(res => res.data),
+    enabled: !!authContext?.user // Only fetch when user is authenticated
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +83,7 @@ export default function Header() {
             <div className="relative" ref={dropdownRef}>
               <HoverBorderGradient>
                 <button onClick={() => setDropdownOpen(!dropdownOpen)} className="text-blue-600 no-underline focus:outline-none bg-transparent border-none">
-                  Profile
+                  {user?.Username || 'User'}
                 </button>
               </HoverBorderGradient>
               {dropdownOpen && (

@@ -83,10 +83,92 @@ export default function VideoPage() {
             <h1 className="text-2xl font-bold">{video.Title}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
               <div className="text-gray-600">Uploaded by {video.User.Username}</div>
-              <button onClick={handleLike} className={`px-4 py-2 rounded-lg ${video.IsLiked && auth?.user ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                Like ({video.Likes})
-              </button>
+              <div className="like-wrapper">
+                <div className="container" onClick={handleLike}>
+                  <input 
+                    type="checkbox" 
+                    checked={video.IsLiked && !!auth?.user} 
+                    onChange={handleLike}
+                    readOnly
+                  />
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+              </div>
             </div>
+
+            <style jsx>{`
+              .like-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+                text-align: center;
+                justify-content: center;
+                cursor: pointer;
+              }
+              
+              .like-wrapper::before {
+                content: '';
+                position: absolute;
+                inset: -1px;
+                background: linear-gradient(to right, #93c5fd, #3b82f6);
+                border-radius: 9999px;
+                opacity: 0;
+                transition: opacity 0.3s;
+                filter: blur(1px);
+                z-index: 0;
+              }
+              
+              .like-wrapper:hover::before {
+                opacity: 1;
+              }
+              
+              .like-wrapper > .container {
+                position: relative;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 9999px;
+                padding: 0.5rem;
+                transition: background-color 0.3s;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                user-select: none;
+              }
+              
+              .like-wrapper:hover > .container {
+                background: #f9fafb;
+              }
+
+              .container input {
+                position: absolute;
+                opacity: 0;
+                cursor: pointer;
+                height: 0;
+                width: 0;
+              }
+
+              .container svg {
+                position: relative;
+                top: 0;
+                left: 0;
+                height: 20px;
+                width: 20px;
+                transition: all 0.3s;
+                fill: #666;
+              }
+
+              .container svg:hover {
+                transform: scale(1.1) rotate(-10deg);
+              }
+
+              .container input:checked ~ svg {
+                fill: #2196F3;
+              }
+            `}</style>
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <p className="text-sm font-medium text-gray-700 mb-1">{video.Views.toLocaleString()} views • Uploaded {new Date(video.CreatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
               <p className="text-base whitespace-pre-wrap">{video.Description}</p>

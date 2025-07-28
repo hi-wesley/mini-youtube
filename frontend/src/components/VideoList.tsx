@@ -83,7 +83,7 @@ export default function VideoList() {
               {/* Avatar removed as per request */}
               <div className="ml-3">
                 <p className="text-base font-medium text-f1f1f1 leading-tight break-words">{video.Title}</p>
-                <p className="text-sm text-zinc-400 mt-1">{video.User.Username}</p>
+                <p className="text-sm text-zinc-400 mt-1">Uploaded by {video.User?.Username}</p>
                 <p className="text-sm text-zinc-400">
                   {formatViews(video.Views)} views &bull; {timeAgo(video.CreatedAt)}
                 </p>
