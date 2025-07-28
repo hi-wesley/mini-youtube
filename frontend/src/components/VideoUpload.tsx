@@ -6,16 +6,25 @@ export default function VideoUpload() {
   const [file, setFile] = useState<File|null>(null);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const nav = useNavigate();
 
-  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const onSelect = (e:React.ChangeEvent<HTMLInputElement>)=>{
     const f = e.target.files?.[0];
     if(!f) return;
-    if(f.size > 500*1024*1024) return alert('Max 500 MB');
-    if(!['video/mp4','video/quicktime','video/x-matroska'].includes(f.type))
-      return alert('Unsupported format');
+    setError(null);
+    if(f.size > 100*1024*1024) {
+      setError('File size cannot exceed 100 MB.');
+      setFile(null);
+      return;
+    }
+    if(!['video/mp4','video/quicktime','video/x-matroska'].includes(f.type)) {
+      setError('Unsupported video format.');
+      setFile(null);
+      return;
+    }
     setFile(f);
   };
 
@@ -46,6 +55,7 @@ export default function VideoUpload() {
       <div className="flex justify-center items-center mb-4">
         <h2 className="text-xl font-bold text-black">Upload a Video</h2>
       </div>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <form onSubmit={onSubmit} className="space-y-3">
         <label className="flex items-center justify-center gap-2 px-4 h-10 border border-gray-300 rounded-full bg-gray-100 text-black text-sm font-medium cursor-pointer transition-colors hover:bg-gray-200 hover:border-gray-400">
           <span>{file ? file.name : 'Select file...'}</span>

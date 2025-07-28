@@ -72,7 +72,7 @@ export default function VideoPage() {
           <div className="mt-4">
             <h1 className="text-2xl font-bold">{video.Title}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
-              <div className="text-gray-600">Uploaded by: {video.User.Username}</div>
+              <div className="text-gray-600">Uploaded by {video.User.Username}</div>
               {auth?.user && (
                 <>
                   <button onClick={() => likeMutation.mutate()} className={`px-4 py-2 rounded-lg ${video.IsLiked ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>

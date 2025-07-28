@@ -34,7 +34,8 @@ credentials.json
 # .idea/
 # .vscode/
 
-
+# docker
+docker-compose.yml
 
 # sample files
 ytmain.tsx

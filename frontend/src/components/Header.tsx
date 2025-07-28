@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { AuthCtx } from './AuthProvider';
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthCtx, auth } from './AuthProvider';
 
 const YouTubeIcon = () => (
   <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -15,25 +15,6 @@ const YouTubeIcon = () => (
   </svg>
 );
 
-const ProfileIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 66 65"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-3 w-3 text-current"
-  >
-    <path
-      d="M8 8.05571C8 8.05571 54.9009 18.1782 57.8687 30.062C60.8365 41.9458 9.05432 57.4696 9.05432 57.4696"
-      stroke="currentColor"
-      strokeWidth="15"
-      strokeMiterlimit="3.86874"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
 const HoverBorderGradient = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <div className={`relative group ${className}`}>
     <div className="absolute -inset-px bg-gradient-to-r from-blue-300 to-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition duration-300 blur-[1px]"></div>
@@ -44,7 +25,26 @@ const HoverBorderGradient = ({ children, className = "" }: { children: React.Rea
 );
 
 export default function Header() {
-  const auth = useContext(AuthCtx);
+  const authContext = useContext(AuthCtx);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSignOut = () => {
+    auth.signOut().then(() => {
+      navigate('/login');
+    });
+  };
 
   return (
     <header className="bg-white shadow-md">
@@ -54,21 +54,33 @@ export default function Header() {
           Mini YouTube
         </Link>
         <div className="flex items-center gap-4">
-          {auth?.user ? (
+          {authContext?.user ? (
             <>
               <HoverBorderGradient>
                 <Link to="/upload" className="text-blue-600 no-underline">
                   + Create
                 </Link>
               </HoverBorderGradient>
-              <HoverBorderGradient>
-                <Link to="/profile" className="text-blue-600 no-underline">
-                  Profile
-                </Link>
-              </HoverBorderGradient>
+              <div className="relative" ref={dropdownRef}>
+                <HoverBorderGradient>
+                  <button onClick={() => setDropdownOpen(!dropdownOpen)} className="text-blue-600 no-underline focus:outline-none bg-transparent border-none">
+                    Profile
+                  </button>
+                </HoverBorderGradient>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
+                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
+                    <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
-            <Link to="/login" className="text-blue-600">Login</Link>
+            <HoverBorderGradient>
+              <Link to="/login" className="text-blue-600 no-underline">
+                Sign in
+              </Link>
+            </HoverBorderGradient>
           )}
         </div>
       </nav>

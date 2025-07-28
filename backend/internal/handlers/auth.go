@@ -9,6 +9,25 @@ import (
 	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
+// POST /v1/auth/check-username  {username}
+func CheckUsername(c *gin.Context) {
+	var req struct {
+		Username string `json:"username" binding:"required,min=3"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var existingUser models.User
+	if err := db.Conn.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "username already taken"})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 // POST /v1/auth/register  {username}
 func RegisterUser(c *gin.Context) {
 	var req struct {
@@ -19,12 +38,18 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	var existingUser models.User
+    if err := db.Conn.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
+        c.JSON(http.StatusConflict, gin.H{"error": "username already taken"})
+        return
+    }
+
 	uid := c.GetString("uid")
 	email := c.GetString("email")
 
 	user := models.User{ID: uid, Email: email, Username: req.Username}
 	if err := db.Conn.Create(&user).Error; err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "username or email exists"})
+		c.JSON(http.StatusConflict, gin.H{"error": "email already taken"})
 		return
 	}
 	c.Status(http.StatusCreated)

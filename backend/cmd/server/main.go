@@ -47,6 +47,7 @@ func main() {
 	// public
 	v1 := router.Group("/v1")
 	v1.POST("/auth/login", handlers.LoginUser)
+	v1.POST("/auth/check-username", handlers.CheckUsername)
 	v1.GET("/videos", handlers.GetVideos)
 	v1.GET("/videos/:id", middleware.MaybeAuth(), handlers.GetVideo)
 	v1.POST("/videos/:id/view", handlers.IncrementView)
