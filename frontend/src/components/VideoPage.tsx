@@ -46,7 +46,7 @@ export default function VideoPage() {
 
   const handleLike = () => {
     if (!auth?.user) {
-      navigate('/login', { state: { from: location } });
+      alert('You are not logged in');
       return;
     }
     likeMutation.mutate();
@@ -86,9 +86,6 @@ export default function VideoPage() {
               <button onClick={handleLike} className={`px-4 py-2 rounded-lg ${video.IsLiked && auth?.user ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
                 Like ({video.Likes})
               </button>
-              {auth?.user && (
-                <span>Liked: {video.IsLiked ? 'True' : 'False'}</span>
-              )}
             </div>
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <p className="text-sm font-medium text-gray-700 mb-1">{video.Views.toLocaleString()} views • Uploaded {new Date(video.CreatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
