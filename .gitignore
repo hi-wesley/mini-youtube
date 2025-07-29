@@ -33,3 +33,6 @@ credentials.json
 
 # cors-config
 cors-config.json
+
+#.yaml files
+*.yaml

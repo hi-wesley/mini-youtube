@@ -201,12 +201,18 @@ func generateThumbnail(objectName, uid string) (string, error) {
 
 
 func GetVideos(c *gin.Context) {
-	var videos []models.Video
-	if err := db.Conn.Preload("User").Order("created_at ASC").Session(&gorm.Session{SkipPreparedStmt: true}).Find(&videos).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
-		return
-	}
-	c.JSON(http.StatusOK, videos)
+    var videos []models.Video
+    err := db.Conn.
+        Preload("User").
+        Order("created_at ASC").
+        Find(&videos).Error
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+        return
+    }
+
+    c.JSON(http.StatusOK, videos)
 }
 
 func GetVideo(c *gin.Context) {

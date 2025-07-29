@@ -17,9 +17,10 @@ var Conn *gorm.DB
 func Connect(dsn string) error {
 	var err error
 	log.Printf("Connecting to database with DSN: %s", dsn)
-	Conn, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		PrepareStmt: false,
-	})
+	Conn, err = gorm.Open(postgres.New(postgres.Config{
+		DSN: dsn,
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}), &gorm.Config{})
 	return err
 }
 
