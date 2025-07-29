@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function VideoPlayer({ src, autoPlay }: { src: string, autoPlay?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -8,14 +8,16 @@ export default function VideoPlayer({ src, autoPlay }: { src: string, autoPlay?:
       const playVideo = async () => {
         try {
           // Try to play with sound first
-          await videoRef.current.play();
+          if (videoRef.current) {
+            await videoRef.current.play();
+          }
         } catch (error) {
           // If it fails, it's likely due to autoplay restrictions.
           // Mute the video and try playing again.
           console.log("Autoplay with sound failed, falling back to muted autoplay.", error);
           if (videoRef.current) {
             videoRef.current.muted = true;
-            videoRef.current.play();
+            await videoRef.current.play();
           }
         }
       };

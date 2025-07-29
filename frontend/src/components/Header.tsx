@@ -1,5 +1,9 @@
+// This component renders the main navigation header that appears at the top of every page.
+// It includes the site logo, a link to the upload page, and dynamic content
+// that shows either a "Sign in" button or a user profile dropdown menu
+// depending on the user's login status.
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AuthCtx, auth } from './AuthProvider';
 import api from '../api/axios';
@@ -36,8 +40,6 @@ export default function Header() {
   const authContext = useContext(AuthCtx);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const { data: user } = useQuery<User>({ 
     queryKey: ['profile'], 

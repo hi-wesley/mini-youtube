@@ -1,3 +1,7 @@
+// This file handles all Firebase authentication logic.
+// It initializes the connection to Firebase, creates a "context" to share
+// the user's login status across the entire app, and exports functions
+// for signing in and creating new users.
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, User } from 'firebase/auth';

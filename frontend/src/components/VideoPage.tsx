@@ -1,7 +1,10 @@
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+// This file defines the component for the main video watch page.
+// It is responsible for fetching the video data, displaying the video player,
+// showing the title and description, and including the comment section.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { useContext, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 
 import VideoPlayer from './VideoPlayer';
 import CommentArea from './CommentArea';
@@ -25,8 +28,6 @@ interface Video {
 
 export default function VideoPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
   const queryClient = useQueryClient();
   const viewIncremented = useRef(false);
   const auth = useContext(AuthCtx);
@@ -98,77 +99,6 @@ export default function VideoPage() {
               </div>
             </div>
 
-            <style jsx>{`
-              .like-wrapper {
-                position: relative;
-                display: flex;
-                align-items: center;
-                text-align: center;
-                justify-content: center;
-                cursor: pointer;
-              }
-              
-              .like-wrapper::before {
-                content: '';
-                position: absolute;
-                inset: -1px;
-                background: linear-gradient(to right, #93c5fd, #3b82f6);
-                border-radius: 9999px;
-                opacity: 0;
-                transition: opacity 0.3s;
-                filter: blur(1px);
-                z-index: 0;
-              }
-              
-              .like-wrapper:hover::before {
-                opacity: 1;
-              }
-              
-              .like-wrapper > .container {
-                position: relative;
-                background: white;
-                border: 1px solid #e5e7eb;
-                border-radius: 9999px;
-                padding: 0.5rem;
-                transition: background-color 0.3s;
-                z-index: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                user-select: none;
-              }
-              
-              .like-wrapper:hover > .container {
-                background: #f9fafb;
-              }
-
-              .container input {
-                position: absolute;
-                opacity: 0;
-                cursor: pointer;
-                height: 0;
-                width: 0;
-              }
-
-              .container svg {
-                position: relative;
-                top: 0;
-                left: 0;
-                height: 20px;
-                width: 20px;
-                transition: all 0.3s;
-                fill: #666;
-              }
-
-              .container svg:hover {
-                transform: scale(1.1) rotate(-10deg);
-              }
-
-              .container input:checked ~ svg {
-                fill: #2196F3;
-              }
-            `}</style>
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <p className="text-sm font-medium text-gray-700 mb-1">{video.Views.toLocaleString()} views • Uploaded {new Date(video.CreatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
               <p className="text-base whitespace-pre-wrap">{video.Description}</p>

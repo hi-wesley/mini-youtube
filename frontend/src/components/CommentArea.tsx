@@ -1,6 +1,9 @@
+// This component handles the entire comment section for a video.
+// It fetches the initial list of comments and then establishes a WebSocket
+// connection to receive and display new comments in real-time. It also
+// contains the form for users to submit new comments.
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import { getAuth } from 'firebase/auth';
 
@@ -18,8 +21,6 @@ export default function CommentArea({videoId}:{videoId:string}) {
   const [ws, setWs] = useState<WebSocket|null>(null);
   const [msg, setMsg] = useState('');
   const auth = getAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const queryClient = useQueryClient();
 
   const {data:initial} = useQuery<Comment[]>({ 

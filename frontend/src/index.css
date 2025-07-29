@@ -24,3 +24,74 @@
 .comment-message {
   margin-top: 0;
 }
+
+/* Styles for the Like Button */
+.like-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.like-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(to right, #93c5fd, #3b82f6);
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  filter: blur(1px);
+  z-index: 0;
+}
+
+.like-wrapper:hover::before {
+  opacity: 1;
+}
+
+.like-wrapper > .container {
+  position: relative;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0.5rem;
+  transition: background-color 0.3s;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.like-wrapper:hover > .container {
+  background: #f9fafb;
+}
+
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.container svg {
+  position: relative;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  transition: all 0.3s;
+  fill: #666;
+}
+
+.container svg:hover {
+  transform: scale(1.1) rotate(-10deg);
+}
+
+.container input:checked ~ svg {
+  fill: #2196F3;
+}

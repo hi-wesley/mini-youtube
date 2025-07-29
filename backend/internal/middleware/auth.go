@@ -1,3 +1,7 @@
+// This file provides "middleware" for handling security.
+// Middleware is a piece of code that runs before the main handler for a
+// web request. The `Auth()` function checks for a valid user login token
+// on protected routes, ensuring that only logged-in users can access them.
 package middleware
 
 import (
@@ -12,7 +16,7 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.GetHeader("Authorization")
-		log.Printf("Authorization header: %s", h)
+		log.Printf("Authorization header present: %t", h != "")
 
 		idToken := strings.TrimPrefix(h, "Bearer ")
 		if idToken == "" {

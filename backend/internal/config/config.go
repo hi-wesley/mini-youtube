@@ -1,19 +1,25 @@
+// This file handles the application's configuration.
+// It reads important settings, like database connection strings and security keys,
+// from environment variables or a local `.env` file. This keeps sensitive
+// information separate from the main codebase.
 package config
 
 import (
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	ProjectID     string
-	Region        string
-	GcsBucket     string
-	DB            string // full postgres DSN
-	FirebaseCreds string // path to service‑account JSON
+	ProjectID      string
+	Region         string
+	GcsBucket      string
+	DB             string // full postgres DSN
+	FirebaseCreds  string // path to service‑account JSON
+	AllowedOrigins string
 }
 
 var (
@@ -28,11 +34,23 @@ func Load() *Config {
 		}
 
 		cfg = &Config{
-			ProjectID:     os.Getenv("GCP_PROJECT"),
-			Region:        os.Getenv("REGION"),
-			GcsBucket:     os.Getenv("GCS_BUCKET"),
-			DB:            os.Getenv("DB_DSN"),
-			FirebaseCreds: os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+			ProjectID:      os.Getenv("GCP_PROJECT"),
+			Region:         os.Getenv("REGION"),
+			GcsBucket:      os.Getenv("GCS_BUCKET"),
+			DB:             strings.Trim(os.Getenv("DB_DSN"), `"`),
+			FirebaseCreds:  os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+			AllowedOrigins: os.Getenv("ALLOWED_ORIGINS"),
+		}
+
+		// Validate required configuration
+		if cfg.GcsBucket == "" {
+			log.Fatal("GCS_BUCKET environment variable is required")
+		}
+		if cfg.ProjectID == "" {
+			log.Fatal("GCP_PROJECT environment variable is required")
+		}
+		if cfg.DB == "" {
+			log.Fatal("DB_DSN environment variable is required")
 		}
 	})
 	return cfg

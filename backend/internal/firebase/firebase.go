@@ -11,6 +11,7 @@ import (
 var Client *auth.Client
 
 func init() {
+	// When GOOGLE_APPLICATION_CREDENTIALS is set, the SDK will automatically find and use it.
 	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
 		log.Fatalf("Failed to initialize Firebase app: %v", err)

@@ -26,19 +26,10 @@ go.work.sum
 
 # env file
 .env
+.env.production
 
 # credentials
 credentials.json
 
-# Editor/IDE
-# .idea/
-# .vscode/
-
-# docker
-docker-compose.yml
-
-# sample files
-ytmain.tsx
-ytvideo.tsx
-ytmain.html
-ytvideo.html
+# cors-config
+cors-config.json

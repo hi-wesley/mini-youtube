@@ -1,3 +1,7 @@
+// This is the main entry point for the frontend React application.
+// It sets up all the different pages (routes) for the website, like the
+// homepage, the login page, and the video watch page. It also wraps the
+// entire application in providers for handling data fetching and user authentication.
 import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';

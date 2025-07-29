@@ -1,3 +1,7 @@
+// This component provides the user interface for both the login and registration pages.
+// It displays a form for email and password (and username for registration) and
+// handles the complex logic of communicating with both Firebase for authentication
+// and our own backend to create a user profile record.
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from './AuthProvider';

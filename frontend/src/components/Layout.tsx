@@ -1,3 +1,7 @@
+// This component provides the basic visual structure for most pages.
+// It renders the main site header and then displays the specific content
+// for the current page (passed in as "children"). It's also responsible
+// for setting the background image for the site.
 import React from 'react';
 import Header from './Header';
 

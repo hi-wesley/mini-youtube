@@ -1,3 +1,7 @@
+// This file defines the data structures for the application.
+// Each "struct" represents a table in the database (like Users, Videos, etc.)
+// and tells the application what kind of information each piece of data holds,
+// for example, whether it's a string of text, a number, or a date.
 package models
 
 import "time"
@@ -21,7 +25,7 @@ type Video struct {
 	SummaryModel string    `gorm:"size:50" json:"SummaryModel"`
 	Views        int64     `json:"Views"`
 	CreatedAt    time.Time `json:"CreatedAt"`
-	User         User      `gorm:"foreignKey:UserID" json:"User"`
+	User         *User     `gorm:"foreignKey:UserID" json:"User"`
 	Comments     []Comment `json:"Comments"`
 	Likes        int       `gorm:"-" json:"Likes"`
 	IsLiked      bool      `gorm:"-" json:"IsLiked"`
