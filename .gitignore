@@ -25,6 +25,7 @@ go.work
 go.work.sum
 
 # node_modules
+node_modules
 node_modules/
 
 # env file

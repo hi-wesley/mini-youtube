@@ -12,18 +12,21 @@ RUN go mod download
 COPY . ./
 
 # Build the application. The path is now relative to the module root.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o /app ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o /server ./cmd/server
 
 # Start a new, smaller stage for the final image.
 FROM debian:bookworm-slim
 
-# Install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg --no-install-recommends && rm -rf /var/lib/apt/lists/*
+# Install ffmpeg and ca-certificates
+RUN apt-get update && apt-get install -y ffmpeg ca-certificates --no-install-recommends && rm -rf /var/lib/apt/lists/*
 ENV PORT=8080
 EXPOSE 8080
 
 # Copy the compiled application from the builder stage.
-COPY --from=builder /app /app
+COPY --from=builder /server /server
+
+# Copy the Firebase credentials file
+COPY firebasekey.json /firebasekey.json
 
 # Set the entrypoint for the container.
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/server"]
