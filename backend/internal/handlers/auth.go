@@ -25,7 +25,7 @@ func CheckUsername(c *gin.Context) {
 	}
 
 	var existingUser models.User
-	if err := db.Conn.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
+	if err := db.Conn.Where("LOWER(username) = LOWER(?)", req.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "username already taken"})
 		return
 	}
@@ -44,7 +44,7 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	var existingUser models.User
-	if err := db.Conn.Where("username = ?", req.Username).First(&existingUser).Error; err == nil {
+	if err := db.Conn.Where("LOWER(username) = LOWER(?)", req.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "username already taken"})
 		return
 	}
