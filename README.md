@@ -1,7 +1,9 @@
 # Mini YouTube
 
 [Link to Mini YouTube](https://wesleys-yt.web.app/)
+
 ![Screenshot](https://i.imgur.com/31W36lL.png)
+
 ![Screenshot](https://i.imgur.com/0ksz4jV.png)
 
 A full-stack video sharing platform featuring video uploads, AI-powered summaries, commenting, and user authentication. Built with a Go backend and React frontend, designed for scalable deployment on Google Cloud.
