@@ -22,7 +22,7 @@ func GenerateAndCacheSummary(videoID, gcsURI string) {
 	}
 	defer client.Close()
 
-	modelName := "gemini-2.5-flash" // latest model that understands video
+	modelName := "gemini-2.5-pro"
 	model := client.GenerativeModel(modelName)
 
 	resp, err := model.GenerateContent(ctx, genai.FileData{MIMEType: "video/mp4", FileURI: gcsURI}, genai.Text("Summarize this video in 3 concise sentences."))
