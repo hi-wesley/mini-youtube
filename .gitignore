@@ -24,15 +24,16 @@ profile.cov
 go.work
 go.work.sum
 
+# node_modules
+node_modules/
+
 # env file
 .env
 .env.production
 
-# credentials
-credentials.json
+# json files
+*.json
+firebasekey.json
 
-# cors-config
-cors-config.json
 
-#.yaml files
-*.yaml
+.txt

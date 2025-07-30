@@ -27,6 +27,9 @@ func main() {
 	if err := db.Connect(cfg.DB); err != nil {
 		log.Fatalf("db connect: %v", err)
 	}
+	if err := db.AutoMigrate(); err != nil {
+		log.Fatalf("db automigrate: %v", err)
+	}
 
 	// ----- HTTP router -----
 	router := gin.New()

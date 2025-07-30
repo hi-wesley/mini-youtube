@@ -36,7 +36,7 @@ func Load() *Config {
 		cfg = &Config{
 			ProjectID:      os.Getenv("GCP_PROJECT"),
 			Region:         os.Getenv("REGION"),
-			GcsBucket:      "mini-youtube",
+			GcsBucket:      os.Getenv("GCS_BUCKET"),
 			DB:             strings.Trim(os.Getenv("DB_DSN"), `"`),
 			FirebaseCreds:  os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
 			AllowedOrigins: os.Getenv("ALLOWED_ORIGINS"),
@@ -48,6 +48,9 @@ func Load() *Config {
 		}
 		if cfg.DB == "" {
 			log.Fatal("DB_DSN environment variable is required")
+		}
+		if cfg.GcsBucket == "" {
+			log.Fatal("GCS_BUCKET environment variable is required")
 		}
 	})
 	return cfg
