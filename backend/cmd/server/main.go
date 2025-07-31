@@ -31,6 +31,18 @@ func main() {
 		log.Fatalf("db automigrate: %v", err)
 	}
 
+	// ----- initialize rate limiter -----
+	if cfg.RateLimitEnabled && cfg.RateLimitRedisURL != "" {
+		if err := middleware.InitRateLimiter(cfg.RateLimitRedisURL, cfg.RateLimitRedisDB); err != nil {
+			log.Printf("WARNING: Failed to initialize rate limiter: %v", err)
+			log.Printf("Rate limiting will be disabled")
+		} else {
+			log.Printf("Rate limiting enabled with Redis")
+		}
+	} else {
+		log.Printf("Rate limiting disabled")
+	}
+
 	// ----- HTTP router -----
 	router := gin.New()
 	router.RedirectTrailingSlash = true
@@ -47,7 +59,12 @@ func main() {
 	// Set up CORS from environment variable
 	origins := []string{"*"} // Default to allow all
 	if cfg.AllowedOrigins != "" {
-		origins = strings.Split(cfg.AllowedOrigins, ",")
+		// Handle both comma and space separated origins
+		if strings.Contains(cfg.AllowedOrigins, ",") {
+			origins = strings.Split(cfg.AllowedOrigins, ",")
+		} else {
+			origins = strings.Fields(cfg.AllowedOrigins) // Split by whitespace
+		}
 		for i := range origins {
 			origins[i] = strings.TrimSpace(origins[i])
 		}
@@ -63,22 +80,24 @@ func main() {
 	// public
 	v1 := router.Group("/v1")
 	{
-		v1.POST("/auth/login", handlers.LoginUser)
-		v1.POST("/auth/check-username", handlers.CheckUsername)
-		v1.POST("/auth/register", handlers.RegisterUser)
+		// Authentication endpoints - daily limits
+		v1.POST("/auth/login", middleware.RateLimitByIP(60, 24*time.Hour), handlers.LoginUser)
+		v1.POST("/auth/check-username", middleware.RateLimitByIP(30, 24*time.Hour), handlers.CheckUsername)
+		v1.POST("/auth/register", middleware.RateLimitByIP(6, 24*time.Hour), handlers.RegisterUser)
 
-		v1.GET("/videos", handlers.GetVideos)
-		v1.GET("/videos/:id", middleware.MaybeAuth(), handlers.GetVideo)
-		v1.POST("/videos/:id/view", handlers.IncrementView)
-		v1.GET("/videos/:id/comments", handlers.GetComments)
-		v1.GET("/ws/comments", handlers.CommentsSocket) // ws://…/ws/comments?vid=<id>
+		// Public video endpoints - daily limits except comments
+		v1.GET("/videos", middleware.RateLimitByIP(480, 24*time.Hour), handlers.GetVideos)
+		v1.GET("/videos/:id", middleware.MaybeAuth(), middleware.RateLimitByIP(480, 24*time.Hour), handlers.GetVideo)
+		v1.POST("/videos/:id/view", middleware.RateLimitByIP(480, 24*time.Hour), handlers.IncrementView)
+		v1.GET("/videos/:id/comments", middleware.RateLimitByIP(60, time.Minute), handlers.GetComments)
+		v1.GET("/ws/comments", handlers.CommentsSocket) // WebSocket - handled differently
 
-		// auth-protected
-		v1.GET("/profile", middleware.Auth(), handlers.GetProfile)
-		v1.POST("/videos/initiate-upload", middleware.Auth(), handlers.InitiateUpload)
-		v1.POST("/videos/finalize-upload", middleware.Auth(), handlers.FinalizeUpload)
-		v1.POST("/videos/:id/like", middleware.Auth(), handlers.ToggleLike)
-		v1.POST("/comments", middleware.Auth(), handlers.CreateComment)
+		// auth-protected endpoints with user-based rate limiting
+		v1.GET("/profile", middleware.Auth(), middleware.RateLimitByUser(60, time.Minute), handlers.GetProfile)
+		v1.POST("/videos/initiate-upload", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.InitiateUpload)
+		v1.POST("/videos/finalize-upload", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.FinalizeUpload)
+		v1.POST("/videos/:id/like", middleware.Auth(), middleware.RateLimitByUser(60, 24*time.Hour), handlers.ToggleLike)
+		v1.POST("/comments", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.CreateComment)
 
 	}
 

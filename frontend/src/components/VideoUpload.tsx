@@ -87,6 +87,8 @@ export default function VideoUpload() {
         // Handle errors from our API or GCS
         if (err.response.status === 403) {
           errorMessage = 'Permission denied. Could not upload to storage.';
+        } else if (err.response.status === 429) {
+          errorMessage = 'Upload limit reached. Please try again later.';
         } else if (err.response.data && err.response.data.error) {
           errorMessage = `Upload failed: ${err.response.data.error}`;
         } else {

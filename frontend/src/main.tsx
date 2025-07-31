@@ -17,6 +17,7 @@ import ProfilePage from './components/ProfilePage';
 import VideoList from './components/VideoList';
 import VideoUpload from './components/VideoUpload';
 import VideoPage from './components/VideoPage';
+import RateLimitNotification from './components/RateLimitNotification';
 
 const qc = new QueryClient();
 
@@ -25,6 +26,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={qc}>
       <AuthProvider>
         <BrowserRouter>
+          <RateLimitNotification />
           <Routes>
             <Route
               path="/login"

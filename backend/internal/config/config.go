@@ -7,6 +7,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -14,12 +15,15 @@ import (
 )
 
 type Config struct {
-	ProjectID      string
-	Region         string
-	GcsBucket      string
-	DB             string // full postgres DSN
-	FirebaseCreds  string // path to service‑account JSON
-	AllowedOrigins string
+	ProjectID          string
+	Region             string
+	GcsBucket          string
+	DB                 string // full postgres DSN
+	FirebaseCreds      string // path to service‑account JSON
+	AllowedOrigins     string
+	RateLimitEnabled   bool
+	RateLimitRedisURL  string
+	RateLimitRedisDB   int
 }
 
 var (
@@ -33,13 +37,23 @@ func Load() *Config {
 			log.Println("No .env file found, using environment variables")
 		}
 
+		redisDB := 0
+		if dbStr := os.Getenv("RATE_LIMIT_REDIS_DB"); dbStr != "" {
+			if db, err := strconv.Atoi(dbStr); err == nil {
+				redisDB = db
+			}
+		}
+
 		cfg = &Config{
-			ProjectID:      os.Getenv("GCP_PROJECT"),
-			Region:         os.Getenv("REGION"),
-			GcsBucket:      os.Getenv("GCS_BUCKET"),
-			DB:             strings.Trim(os.Getenv("DB_DSN"), `"`),
-			FirebaseCreds:  os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
-			AllowedOrigins: os.Getenv("ALLOWED_ORIGINS"),
+			ProjectID:         os.Getenv("GCP_PROJECT"),
+			Region:            os.Getenv("REGION"),
+			GcsBucket:         os.Getenv("GCS_BUCKET"),
+			DB:                strings.Trim(os.Getenv("DB_DSN"), `"`),
+			FirebaseCreds:     os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+			AllowedOrigins:    os.Getenv("ALLOWED_ORIGINS"),
+			RateLimitEnabled:  os.Getenv("RATE_LIMIT_ENABLED") == "true",
+			RateLimitRedisURL: os.Getenv("RATE_LIMIT_REDIS_URL"),
+			RateLimitRedisDB:  redisDB,
 		}
 
 		

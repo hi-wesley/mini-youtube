@@ -69,6 +69,8 @@ export default function Login() {
         setError('Password should be at least 6 characters.');
       } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         setError('Invalid email or password.');
+      } else if (error.isRateLimitError) {
+        setError(error.rateLimitMessage || 'Too many attempts. Please try again later.');
       } else {
         setError('An unexpected error occurred. Please try again.');
       }

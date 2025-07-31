@@ -9,6 +9,7 @@ import (
 
 	"github.com/hi-wesley/mini-youtube/internal/db"
 	"github.com/hi-wesley/mini-youtube/internal/firebase"
+	"github.com/hi-wesley/mini-youtube/internal/middleware"
 	"github.com/hi-wesley/mini-youtube/internal/models"
 )
 
@@ -43,9 +44,24 @@ func CommentsSocket(c *gin.Context) {
 	// Store UID in context for this connection if needed later
 	c.Set("uid", token.UID)
 
+	// Check WebSocket connection limit (1 connection per user per video)
+	allowed, err := middleware.CheckWebSocketLimit(token.UID, vid)
+	if err != nil {
+		log.Printf("CommentsSocket: rate limit check error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "connection limit check failed"})
+		return
+	}
+	if !allowed {
+		log.Printf("CommentsSocket: connection limit exceeded for user %s on video %s", token.UID, vid)
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "already connected to this video"})
+		return
+	}
+
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Printf("CommentsSocket: upgrade error: %v", err)
+		// Release the connection limit if upgrade fails
+		middleware.ReleaseWebSocketLimit(token.UID, vid)
 		return
 	}
 	log.Println("CommentsSocket: connection upgraded")
@@ -56,6 +72,12 @@ func CommentsSocket(c *gin.Context) {
 	log.Println("CommentsSocket: connection registered")
 
 	// read pump: discard messages (front‑end sends via REST)
+	defer func() {
+		// Release WebSocket connection limit when connection closes
+		middleware.ReleaseWebSocketLimit(token.UID, vid)
+		log.Printf("CommentsSocket: released connection limit for user %s on video %s", token.UID, vid)
+	}()
+
 	for {
 		if _, _, err := conn.ReadMessage(); err != nil {
 			log.Printf("CommentsSocket: read error: %v", err)
