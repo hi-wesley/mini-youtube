@@ -96,7 +96,9 @@ func main() {
 		v1.GET("/profile", middleware.Auth(), middleware.RateLimitByUser(60, time.Minute), handlers.GetProfile)
 		v1.POST("/videos/initiate-upload", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.InitiateUpload)
 		v1.POST("/videos/finalize-upload", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.FinalizeUpload)
-		v1.POST("/videos/:id/like", middleware.Auth(), middleware.RateLimitByUser(60, 24*time.Hour), handlers.ToggleLike)
+		v1.POST("/videos/:id/like", middleware.Auth(), middleware.RateLimitByUser(60, 24*time.Hour), handlers.ToggleLike) // Deprecated - kept for backwards compatibility
+		v1.PUT("/videos/:id/like", middleware.Auth(), middleware.RateLimitByUser(60, 24*time.Hour), handlers.CreateLike)
+		v1.DELETE("/videos/:id/like", middleware.Auth(), middleware.RateLimitByUser(60, 24*time.Hour), handlers.RemoveLike)
 		v1.POST("/comments", middleware.Auth(), middleware.RateLimitByUser(30, 24*time.Hour), handlers.CreateComment)
 
 	}

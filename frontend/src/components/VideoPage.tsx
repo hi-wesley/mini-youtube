@@ -39,7 +39,13 @@ export default function VideoPage() {
   });
 
   const likeMutation = useMutation({
-    mutationFn: () => api.post(`/v1/videos/${id}/like`),
+    mutationFn: (action: 'like' | 'unlike') => {
+      if (action === 'like') {
+        return api.put(`/v1/videos/${id}/like`);
+      } else {
+        return api.delete(`/v1/videos/${id}/like`);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['video', id] });
     },
@@ -50,7 +56,9 @@ export default function VideoPage() {
       alert('You are not logged in');
       return;
     }
-    likeMutation.mutate();
+    // Determine action based on current state
+    const action = video?.IsLiked ? 'unlike' : 'like';
+    likeMutation.mutate(action);
   };
 
   useEffect(() => {
@@ -85,17 +93,17 @@ export default function VideoPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="mt-2">
               <div className="text-gray-600">Uploaded by {video.User.Username}</div>
               <div className="like-wrapper">
-                <div className="container" onClick={handleLike}>
-                  <input 
-                    type="checkbox" 
-                    checked={video.IsLiked && !!auth?.user} 
-                    onChange={handleLike}
-                    readOnly
-                  />
-                  <svg viewBox="0 0 24 24">
+                <button 
+                  className={`container star-button ${video.IsLiked && auth?.user ? 'liked' : ''}`}
+                  onClick={handleLike}
+                  aria-pressed={video.IsLiked && !!auth?.user}
+                  aria-label={`${video.Likes || 0} likes. ${video.IsLiked && auth?.user ? 'Click to unlike' : 'Click to like'} this video`}
+                  type="button"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
-                </div>
+                </button>
               </div>
             </div>
 

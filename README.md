@@ -144,7 +144,9 @@ All endpoints are prefixed with `/v1`.
 | `POST` | `/videos/finalize-upload`      | Confirms successful upload and creates the video record in the database. | Yes           |
 | `GET`  | `/videos/:id`                  | Retrieves details for a single video.                                    | No            |
 | `POST` | `/videos/:id/view`             | Increments the view count for a video.                                   | No            |
-| `POST` | `/videos/:id/like`             | Toggles a like on a video.                                               | Yes           |
+| `PUT`  | `/videos/:id/like`             | Likes a video (idempotent - safe to retry).                              | Yes           |
+| `DELETE`| `/videos/:id/like`             | Unlikes a video (idempotent - safe to retry).                           | Yes           |
+| `POST` | `/videos/:id/like`             | (Deprecated) Toggles like status. Use PUT/DELETE instead.                | Yes           |
 | `GET`  | `/videos/:id/comments`         | Retrieves all comments for a video.                                      | No            |
 | `POST` | `/comments`                    | Creates a new comment on a video.                                        | Yes           |
 | `GET`  | `/ws/comments?vid=<id>`        | Establishes a WebSocket connection for real-time comments.               | No            |

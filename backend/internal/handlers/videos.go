@@ -267,3 +267,53 @@ func ToggleLike(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+// CreateLike adds a like to a video (idempotent - safe to call multiple times)
+func CreateLike(c *gin.Context) {
+	uid := c.GetString("uid")
+	vid := c.Param("id")
+
+	// Check if video exists
+	var video models.Video
+	if err := db.Conn.First(&video, "id = ?", vid).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "video not found"})
+		return
+	}
+
+	// Check if like already exists
+	var existingLike models.Like
+	if err := db.Conn.First(&existingLike, "user_id = ? AND video_id = ?", uid, vid).Error; err == nil {
+		// Like already exists - this is fine (idempotent)
+		c.Status(http.StatusOK)
+		return
+	}
+
+	// Create new like
+	like := models.Like{UserID: uid, VideoID: vid}
+	if err := db.Conn.Create(&like).Error; err != nil {
+		// Handle race condition where like was created between check and create
+		if err := db.Conn.First(&existingLike, "user_id = ? AND video_id = ?", uid, vid).Error; err == nil {
+			c.Status(http.StatusOK)
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+// RemoveLike removes a like from a video (idempotent - safe to call multiple times)
+func RemoveLike(c *gin.Context) {
+	uid := c.GetString("uid")
+	vid := c.Param("id")
+
+	// Delete the like (if it exists)
+	result := db.Conn.Where("user_id = ? AND video_id = ?", uid, vid).Delete(&models.Like{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+
+	// Success whether like existed or not (idempotent)
+	c.Status(http.StatusOK)
+}

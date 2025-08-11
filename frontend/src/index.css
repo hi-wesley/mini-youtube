@@ -70,12 +70,21 @@
   background: #f9fafb;
 }
 
-.container input {
-  position: absolute;
-  opacity: 0;
+/* Button reset for star button */
+.star-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
   cursor: pointer;
-  height: 0;
-  width: 0;
+}
+
+.star-button:focus-visible {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+  border-radius: 9999px;
 }
 
 .container svg {
@@ -92,6 +101,6 @@
   transform: scale(1.1) rotate(-10deg);
 }
 
-.container input:checked ~ svg {
+.container.liked svg {
   fill: #2196F3;
 }

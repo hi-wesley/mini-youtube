@@ -1,7 +1,4 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# Go binary artifacts
 *.exe
 *.exe~
 *.dll
@@ -17,24 +14,48 @@ coverage.*
 *.coverprofile
 profile.cov
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+vendor/
 
-# Go workspace file
+# Go workspace files
 go.work
 go.work.sum
 
-# node_modules
-node_modules
+# Node.js dependencies
 node_modules/
 
-# env file
+# Environment files
 .env
 .env.production
 
-# json files
+# JSON files (excluding package.json)
 *.json
+!package.json
 firebasekey.json
 
+# Text files
+*.txt
 
-.txt
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build artifacts
+dist/
+build/
+.cache/
+.next/
+out/
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Temporary or backup files
+*.tmp
+*.temp
+*.swp
+*.swo
